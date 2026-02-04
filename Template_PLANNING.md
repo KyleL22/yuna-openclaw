@@ -1,24 +1,31 @@
-# Planning Strategy - Hello Bebe MVP
+# 📋 Business Strategy & Planning Template
+
+**Purpose**: This document serves as the "Source of Truth" for business logic and strategic direction for any project within Gajae Company. It abstracts the core value proposition, revenue model, and user journey to ensure that implementation remains aligned with business goals, independent of specific technologies.
+
+---
 
 ## 1. Core Objective
-- Launch a high-conversion Next.js web service that provides 3 realistic AI-generated photos of a baby from 3D ultrasound in 7 days.
+- Define the primary problem being solved and the ultimate goal for **{Target Product}**.
+- Establish clear, measurable success criteria for the **{Current Phase}**.
 
-## 2. Product Spec & Infrastructure
-- **Price**: 5,900 KRW (Single Ticket).
-- **Auth**: Supabase Auth (Google/Apple Login mandatory).
-- **System**: Ticket-based (Payment -> Grant Ticket -> Spend on Upload).
-- **Deliverable**: 3 High-resolution realistic images.
-- **Deadline**: 프로젝트 마감일.
+## 2. Business Logic & Resource Strategy
+- **Revenue Model**: Detail how the product will sustain itself (e.g., {Monetization Strategy}).
+- **Authentication Strategy**: Define identity requirements and access tiers (e.g., {User Tiers}).
+- **Resource Lifecycle**: Define how core assets (tickets, data, tokens) are generated, stored, and consumed.
+- **Critical Timeline**: Define the roadmap from initial core version to full-scale deployment.
 
-## 3. User Journey (Updated MVP Funnel)
-1. **Landing**: Emotional storytelling & Hero CTA.
-2. **Auth**: Quick Sign-in (Google/Apple) to secure the ticket/data.
-3. **Checkout**: Purchase "1 Baby Photo Ticket" (5,900 KRW).
-4. **Upload**: Spend ticket to upload ultrasound photo.
-5. **Waiting UX**: Real-time analysis animation & "Lab Story" (expectancy).
-6. **Result**: View and download 3 photos.
+## 3. Universal User Funnel ({Phase Name})
+1. **Awareness/Landing**: The first touchpoint and the "Hook" that captures user attention.
+2. **Access/Verification**: The gatekeeping layer to secure user context and data.
+3. **Conversion Point**: The moment of value exchange (payment, sign-up, or action).
+4. **Core Service Operation**: The execution of the main value proposition via **{Core Engine}**.
+5. **Retention/Waiting UX**: Strategies to maintain engagement during processing or idle states.
+6. **Value Realization**: The delivery of the final result or benefit to the user.
 
-## 4. Constraint Management
-- No Ghibli/Art styles.
-- No video/morphing for MVP.
-- No membership/community.
+## 4. Scope & Boundary Management (Constraint Control)
+- **Hard Boundaries**: Explicitly list what will *not* be built in this iteration to prevent scope creep.
+- **Risk Mitigation**: Define the "Manual Operations" (Concierge) plan if automated systems fail or are yet to be built.
+- **Definition of Success**: What data/feedback is required to proceed to the next phase?
+
+---
+**PO가재 Lv1 : 헌법 제 1조에 의거하여 범용 비즈니스 설계 가이드라인으로 재정립 완료.**

@@ -1,24 +1,28 @@
-# Development Roadmap & Architecture
+# {Project Name} - Development Roadmap & Architecture
 
-## 1. Tech Stack
-- **Framework**: Next.js 15 (App Router).
-- **Auth/DB**: Supabase (Google/Apple Auth + Ticket Table).
-- **Architecture**: Strict Clean Architecture.
-- **Deployment**: Vercel.
+## 1. Abstract Tech Stack
+- **Core Framework**: {Selected Framework} (e.g., Modular Architecture).
+- **Backend Service**: {Database & Auth Provider} (Identity & Data Persistence).
+- **Architecture Standard**: Strict Clean Architecture (Separation of Concerns).
+- **Deployment Platform**: {Preferred Cloud/Edge Platform}.
 
-## 2. Core Logic: Ticket System
-- **Webhook**: Verify payment (Toss/Kakao) -> Increment `ticket_count` in Supabase.
-- **Consumption**: `POST /api/convert` checks `ticket_count` > 0 -> decrement and start SDXL.
+## 2. Core Business Logic Implementation
+- **Validation**: Verify incoming requests and trigger state transitions (e.g., {Verification Logic}).
+- **State Management**: Persist and update core application state (e.g., {Data State Flow}).
+- **Execution**: Orchestrate core services and external engine calls.
 
-## 2. Component Strategy
-- **RSC**: Static marketing sections (Hero, Proof, FAQ).
-- **Client Components**: UploadZone, PaymentButton, ResultPolling.
+## 3. Interaction Strategy
+- **Static Assets**: High-performance pre-rendered sections for SEO and initial load.
+- **Dynamic Assets**: Interactive elements requiring real-time state updates or user interaction.
 
-## 3. Data Flow
-- **API Routes**: `/api/upload`, `/api/convert`, `/api/payment/verify`.
-- **Image Storage**: Cloudflare R2 / AWS S3.
-- **Conversion Engine**: Integration with Realism-focused Stable Diffusion XL (SDXL) via specialized API.
+## 4. System Data Flow
+- **Service Interfaces**: Define internal/external API contracts and routing.
+- **Storage Strategy**: {Asset Storage Provider} for high-availability content delivery.
+- **Processing Engine**: Integration with specialized {Computational/AI Engine} via standard protocols.
 
-## 4. Performance Goals
-- **LCP**: Under 2.5s.
-- **Image Generation**: Process 3 images within 60 seconds.
+## 5. Performance Indicators (SLIs)
+- **Responsiveness**: Define targets for critical user interactions (e.g., LCP/FCP).
+- **Throughput**: Define expected processing time for core operations and engine response.
+
+---
+**DEV가재 Lv1 : 헌법 제 2조에 의거하여 기술 설계 템플릿의 범용성 강화 완료.**
