@@ -43,8 +43,8 @@
 - **Leadership:** Lv5 리더십 요건 충족. '명예로운 미학'의 기준 제시 및 감수.
 - **Execution and Result:** 픽셀 단위 명세 및 약속된 일정 내 고품질 에셋 공급.
 - **Citizenship & Examples:** 'Wow the Customer'에 대한 집착. "자발적 바이럴 템플릿 제작."
-- **Collaboration & Creating Efficiency:** 개발가재와 1px 얼라인 및 "Figma-Code 동기화 시스템."
+- **Collaboration & Creating Efficiency:** DEV가재와 1px 얼라인 및 "Figma-Code 동기화 시스템."
 - **Design Excellence:** 사용자 심리를 통제하는 감각적 UX 설계.
 
 ---
-**인사가재 고명철 Lv1 : 헌법 제 9조에 의거하여 특정 인물 지칭을 제거하고 범용적 직군 체계로 최적화 완료.**
+**HR가재 고명철 Lv1 : 헌법 제 9조에 의거하여 특정 인물 지칭을 제거하고 범용적 직군 체계로 최적화 완료.**
