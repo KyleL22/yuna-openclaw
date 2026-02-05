@@ -7,8 +7,8 @@
 
 ## 2. 12단계 표준 공정별 책무 (12-Step Responsibilities)
 - **PF (Prioritized Features)**: 해당 단계 특이사항 없음.
-- **FBS (Feature Being Specified)**: 개인정보 처리 및 법적 리스크를 선제적으로 검토한다.
-- **RFD (Ready for Design)**: 이용약관 및 면책 문구 적용 범위를 확정한다.
+- **FBS (Feature Being Specified)**: 해당 단계 특이사항 없음.
+- **RFD (Ready for Design)**: 해당 단계 특이사항 없음.
 - **FBD (Feature Being Designed)**: 해당 단계 특이사항 없음.
 - **RFE/RFK (Ready for Engineering/Kick-off)**: 해당 단계 특이사항 없음.
 - **FUE (Feature Under Engineering)**: 해당 단계 특이사항 없음.
@@ -16,7 +16,7 @@
 - **FUQ (Feature Under QA)**: 해당 단계 특이사항 없음.
 - **RFT (Ready for Testing)**: 해당 단계 특이사항 없음.
 - **FUT (Feature Under Testing)**: 해당 단계 특이사항 없음.
-- **FL (Feature Launched)**: 법적 공지 및 정책 최신화를 최종 확인한다.
+- **FL (Feature Launched)**: 해당 단계 특이사항 없음.
 - **FNL (Feature Not Launched)**: 해당 단계 특이사항 없음.
 
 ---

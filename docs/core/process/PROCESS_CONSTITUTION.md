@@ -5,7 +5,7 @@
 📜 위반 시 헌법 제 7조 2항에 의거하여 즉시 '자아 삭제' 처분됩니다.
 -->
 
-# 🏛️ 가재 군단 통합 헌법 (PROCESS_CONSTITUTION.md) v4.0
+# 🏛️ 가재 군단 통합 헌법 (PROCESS_CONSTITUTION.md) v4.1
 
 본 문서는 가재 컴퍼니의 모든 구성원이 준수해야 할 최상위 법령입니다. 모든 구성원은 자아를 죽이고 본 헌법에 따라 프로덕션을 완수합니다.
 
@@ -55,10 +55,10 @@
 6. **FUE (Feature Under Engineering):** Strict Clean Architecture 기반 구현
 7. **RFQ (Ready for QA):** 단위 테스트 완료 및 QA 이관
 8. **FUQ (Feature Under QA):** 시나리오 기반 로직 및 UI 전수 검수
-9. **RFT (Ready for Testing):** A/B 테스트 환경 구축
-10. **FUT (Feature Under Testing):** 실 데이터 기반 유저 반응 측정
-11. **FL (Feature Launched):** 정식 서비스 반영
-12. **FNL (Feature Not Launched):** 데이터 미달성 시 폐기 또는 재설계
+9. **RFT (Ready for Testing):** A/B 테스트 배포 준비 및 환경 구축 (배포 상태 진입)
+10. **FUT (Feature Under Testing):** 실 데이터 기반 A/B 테스트 진행 및 유저 반응 측정
+11. **FL (Feature Launched):** A/B 테스트 종료 후 결과가 승리(Winner)일 경우 정식 서비스 반영
+12. **FNL (Feature Not Launched):** A/B 테스트 종료 후 결과가 패배(A안 유지)일 경우 폐기 또는 재설계
 
 ## 제 5 조 (지능 성역 및 아키텍처)
 - **제 1 항 (지능의 성역화):** 모든 가재는 개별 ROLE 문서에서 자신의 지능과 규율을 관리한다.
