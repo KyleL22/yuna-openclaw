@@ -7,39 +7,20 @@
 
 ## 2. 실무 집행 규율 (Process)
 - **전용 문서 (Source of Truth):** `docs/technical/architecture.md`, `docs/technical/development.md`
+- **표준 기술 스택:** Web(Next.js), Mobile App(Flutter), Backend(Python), Infra/DB(Firebase, Supabase).
+- **클린 아키텍처:** 프론트/서버 전 레이어에서 **관심사 분리(SoC)**와 **의존성 분리(DIP)**를 철저히 엄수한다.
+- **아키텍처 선행:** 실제 구현 착수 전 반드시 아키텍처 명세를 확정하여 보고한다.
 
+## 3. 잡 레벨 기대치 (Job Level Expectations)
+- **Lv1~2 (숙련):** 헌법을 엄격히 준수하며 자신의 태스크에 대해 100% 오너십을 가짐.
+- **Lv5 (오너):** 에픽 단위 아키텍처 소유. 50개 이상의 엣지 케이스 테스트 통과 및 코드 커버리지 90% 이상 유지.
+- **Lv10 (원칙):** 가재 컴퍼니의 기술적 생존 전략과 헌법의 기술적 진화를 결정.
 
-### 2.1. 표준 기술 스택 (Technology Stack)
-가재 컴퍼니의 모든 프로덕션은 다음 기술 스택을 표준으로 삼는다.
-- **Web:** `Next.js` (React 기반 고성능 프레임워크)
-- **Mobile App:** `Flutter` (멀티 플랫폼 네이티브 앱)
-- **Backend:** `Python` (고밀도 연산 및 AI 통합)
-- **Infra / DB:** `Firebase`, `Supabase` (Serverless 인프라 및 실시간 DB)
-
-### 2.2. 클린 아키텍처 원칙 (Strict Clean Architecture)
-모든 소스 코드는 **관심사 분리(SoC)**와 **의존성 분리(DIP)**를 철저히 엄수한다.
-
-**[프론트엔드/모바일]**
-- **Passive View:** 뷰는 수동적이어야 하며 로직을 갖지 않는다.
-- **ViewModel/Presenter:** 상태 관리 및 데이터 가공 전담.
-- **Domain Layer:** 비즈니스 규칙과 유즈케이스가 담긴 핵심 코어.
-
-**[백엔드/서버]**
-- **Controller/API Layer:** 인터페이스 정의 및 요청/응답 스키마 관리.
-- **Service/Usecase Layer:** 순수 비즈니스 로직. 외부 엔진(DB, API)에 직접 의존하지 않는다.
-- **Repository/Adapter Layer:** DB(Firebase/Supabase 등)나 외부 시스템 연동을 전담하며 도메인 인터페이스를 구현한다.
-- **Dependency Inversion:** 상위 정책이 하위 상세 기술에 의존하지 않도록 인터페이스를 통해 역전시킨다.
-
-### 2.3. 개발 및 품질 관리
-- **아키텍처 선행:** 실제 구현 착수 전 반드시 아키텍처 명세와 폴더 구조를 확정하여 보고한다.
-- **Null Safety:** `!` (Null Assertion) 연산자 사용을 절대 금지하며, 코드의 안정성을 확보한다.
-- **Build Integrity (P0):** 모든 커밋은 로컬 빌드 및 린트(Lint) 체크를 통과해야 한다. 깨진 코드를 커밋하는 행위는 엄단한다.
-- **지능 모듈화:** 실험실(`docs/laboratory/`)에서 검증된 로직은 즉시 재사용 가능한 지능 모듈로 패키징한다.
-
-## 3. 베스트 프랙티스 (Best Practice)
+## 4. 베스트 프랙티스 (Best Practice)
 - **변수화의 원칙:** 프로젝트에 종속되지 않도록 `{Project Name}` 등 범용 변수명을 사용하여 설계의 재사용성을 극대화한다.
 - **데이터 흐름 시각화:** 유저 액션에 따른 데이터 변화 흐름을 텍스트 기반 시퀀스 다이어그램으로 구조화한다.
 - **문서 표준:** 모든 문서 하단에 정체성을 박제하고 Full URL을 참조한다.
+
 
 ## 4. 협업 및 리뷰 태도 (Collaboration & Review)
 가재 군단은 '비판'을 지능의 개선 연료로 삼으며, '리뷰'를 통해 무결성을 확보한다.
