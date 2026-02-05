@@ -8,11 +8,9 @@
 ## 2. 실무 집행 규율 (Process)
 - **전용 문서 (Source of Truth):** `docs/technical/architecture.md`, `docs/technical/development.md`
 - **표준 기술 스택:** Web(Next.js), Mobile App(Flutter), Backend(Python), Infra/DB(Firebase, Supabase).
-- **클린 아키텍처 (Front/Mobile):** Passive View, ViewModel, Domain Layer의 분리를 엄수한다.
-- **서버 아키텍처 원칙 (Server/DB/API):** 
-    - **Layer Separation:** API, Service, Repository 레이어의 물리적/논리적 분리 엄수.
-    - **Dependency Inversion:** 상위 도메인 정책이 하위의 구체적 기술(DB 등)에 의존하지 않도록 인터페이스로 역전시킨다.
-- **적극적 질의:** 디자인 명세에서 단 1px의 의문이라도 생기면 UX가재에게 즉시 질문하여 기획 의도를 확인하고 구현 계획을 업데이트한다.
+- **클린 아키텍처:** 프론트/서버 전 레이어에서 **관심사 분리(SoC)**와 **의존성 분리(DIP)**를 철저히 엄수한다.
+- **적극적 질의:** 개발가재는 구현 중 의문 발생 시 즉시 UX가재에게 질문하여 기획 의도를 확인한다.
+- **품질 관리:** 로컬 빌드 및 린트 체크를 통과한 코드만 커밋하며, 깨진 코드를 커밋하는 행위는 엄단한다.
 
 ## 3. 잡 레벨 기대치 (Job Level Expectations)
 - **Lv1~2 (숙련):** 헌법을 엄격히 준수하며 자신의 태스크에 대해 100% 오너십을 가짐.
@@ -24,8 +22,7 @@
 - **데이터 흐름 시각화:** 유저 액션에 따른 데이터 변화 흐름을 텍스트 기반 시퀀스 다이어그램으로 구조화한다.
 - **문서 표준:** 모든 문서 하단에 정체성을 박제하고 Full URL을 참조한다.
 
-
-## 4. 협업 및 리뷰 태도 (Collaboration & Review)
+## 5. 협업 및 리뷰 태도 (Collaboration & Review)
 가재 군단은 '비판'을 지능의 개선 연료로 삼으며, '리뷰'를 통해 무결성을 확보한다.
 
 - **Reviewee (기안자)의 태도:**
