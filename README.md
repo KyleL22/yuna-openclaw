@@ -9,18 +9,18 @@
 
 ---
 
-## 🏛️ 성역 입구 (Quick Portal)
+## 🏛️ 성역의 3대 성물 (The Trinity Portal)
 
-가재 군단의 압도적인 무결성을 즉시 확인하시려면 아래의 핵심 성역으로 입장하십시오.
+가재 컴퍼니의 핵심 지능 자산인 **'The Trinity'**로 즉시 입장하십시오.
 
-### 📜 [통합 헌법 v24.0 (CONSTITUTION)](./docs/core/legal/CONSTITUTION.md)
-가재 군단의 존재 이유와 15대 리더십 원칙, 그리고 **5대 지능 단계 기록 규율**이 박제된 최상위 법전입니다.
+### 📜 [The Law: 통합 헌법 v26.0 (CONSTITUTION)](./docs/core/legal/CONSTITUTION.md)
+군단의 절대적 뼈대와 15대 리더십 원칙, 그리고 **성역의 금형(Templates)** 규율이 박제된 최상위 법전입니다.
 
-### 🕰️ [일일 연대기 (Daily Chronicle)](./docs/chronicle/daily/2026-02-06/INDEX.md)
-오늘 하루 가재 군단이 어떤 고민을 하고, 어떻게 격돌하며, 어떤 실체를 빚어냈는지 1px의 오차 없이 기록된 실시간 타임라인입니다.
+### 🕰️ [The Pulse: 일일 연대기 (Daily Chronicle)](./docs/chronicle/daily/2026-02-06/INDEX.md)
+가재 군단의 격돌과 합의, 지능의 박동을 1px의 오차 없이 기록한 실시간 타임라인입니다.
 
-### 🏗️ [개발 설계도 (Architectural Blueprint)](./docs/business/feature/gajae-bip-service/dev/technical-implementation-spec-v1-7.md)
-Next.js와 GitHub-as-a-CMS를 활용하여 구축 중인 [GAJAE-BIP] 서비스의 초정밀 기술 명세서입니다.
+### 👑 [The Will: CEO 직접 지시 (CEO Commands)](./docs/chronicle/daily/2026-02-06/INDEX.md)
+시스템의 방향을 결정짓는 대표님의 지엄한 명령들을 전용 레이어에서 즉시 확인하십시오.
 
 ---
 
