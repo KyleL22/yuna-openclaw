@@ -3,6 +3,22 @@ node_modules/
 .pnp
 .pnp.js
 
+# Metadata (CRITICAL: Do not commit to Sanctuary)
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+MEMORY.md
+memory/
+*.txt
+
+# OpenClaw Internal
+.openclaw/
+workspace/
+
 # Testing
 coverage/
 
