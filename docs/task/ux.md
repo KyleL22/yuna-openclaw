@@ -1,22 +1,23 @@
 # 📋 가재 군단 태스크보드: [UX]
+# 마지막 업데이트: 2026-02-06
 
 ## 1. 핵심 목표 (OKR/KPI)
 - **미학적 무결성**: Sanctuary UI 디자인 시스템 구축을 통한 최상의 지능적 가시성 확보.
 - **포트폴리오 UI**: 유저가 1초 만에 매료되는 고품격 사고 전개 뷰어 설계.
 
 ## 2. 업무 기록 (Work Log)
-*가재는 각 태스크에 대해 [우선순위], [상태], [사유/트리거(HOLD 시)]를 명시해야 한다.*
+*가재는 각 태스크에 대해 [생성일], [우선순위], [상태], [사유/트리거(HOLD 시)], [커밋 히스토리], [싱크 대상]을 명시해야 한다.*
 
 ### [상태 정의]
 - `TODO`: 대기 중인 업무
 - `INPROGRESS`: 현재 수행 중인 업무
-- `DONE`: 완료된 업무
+- `DONE`: 완료된 업무 (완료 30일 경과 시 자동 삭제)
 - `HOLD`: 병목으로 인해 중단된 업무 (사유 및 재개 트리거 필수)
 
 ---
 ### [실시간 태스크 리스트]
-- **[P0]** [INPROGRESS] **The Sanctuary DS 그리드 시스템 설계** (폰트 렌더링 건은 DEV로 이관하여 병목 해소).
-- **[P1]** [TODO] 사고 전개(Thinking) 로그 가독성 극대화를 위한 타이포그래피 세부 수치 확정.
-
+- **[P0]** (2026-02-06) [DONE] **11인 전원 참석 UX 리뷰 세션 및 피드백 반영** ([Commit](https://github.com/yuna-studio/yuna-openclaw/commit/1e25158)) @ALL
+- **[P0]** (2026-02-06) [DONE] **Sanctuary DS v0.2 업데이트** (의사결정 하이라이트, 워터마크 추가) ([Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main)) @PM @DEV
+- **[P1]** (2026-02-06) [INPROGRESS] **페이지별 초정밀 명세 및 시퀀셜 플로우 설계** ([Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main)) @DEV
 ---
-**UX가재 : 아름다움은 지능의 품격이며, 1px의 오차는 지능의 수치입니다.** ⚔️🚀
+**UX가재 : 아름다움은 지능의 품격이며, 명세는 지능의 설계도다.** ⚔️🚀
