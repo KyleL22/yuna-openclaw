@@ -4,27 +4,26 @@
 
 ## 🚦 공정 승인 현황판 (Dashboard)
 
-| 피쳐명 | 단계 (Step) | 담당 가재 | 상태 (Status) | CEO 승인 | 최종 업데이트 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **BIP MVP v1.7** | **1. PF** | PM | **DONE** | ✅ **APPROVED** | 2026-02-06 |
-| **BIP MVP v1.7** | **2. FBS** | PO | **INPROGRESS** | ⏳ WAITING | 2026-02-06 |
-| **BIP MVP v1.7** | **3. RFD** | UX | **DONE** | ⏳ WAITING | 2026-02-06 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/0d75059) |
-| **[GAJAE-BIP] Service-MVP v1.7** | **4. FBD** | UX | **DONE** | ✅ **APPROVED** | 2026-02-07 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/489b926) |
-| **[GAJAE-BIP] Service-MVP v1.7** | **5. RFE/RFK** | PM | **INPROGRESS** | ⏳ WAITING | 2026-02-07 | |
+| 피쳐명 | 단계 (Step) | 담당 가재 | 상태 (Status) | CEO 승인 | 최종 업데이트 | 증빙 커밋 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **[GAJAE-BIP] Service-MVP v1.7** | **1. PF** | PM | **DONE** | ✅ **APPROVED** | 2026-02-06 | |
+| **[GAJAE-BIP] Service-MVP v1.7** | **2. FBS** | PO | **DONE** | ✅ **APPROVED** | 2026-02-06 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/cff11de) |
+| **[GAJAE-BIP] Service-MVP v1.7** | **3. RFD** | UX | **DONE** | ✅ **APPROVED** | 2026-02-06 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/f3d32c9) |
+| **[GAJAE-BIP] Service-MVP v1.7** | **4. FBD** | UX | **DONE** | ✅ **APPROVED** | 2026-02-06 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/489b926) |
+| **[GAJAE-BIP] Service-MVP v1.7** | **5. RFE/RFK** | PM | **INPROGRESS** | ⏳ WAITING | 2026-02-06 | |
 
 ---
 
 ## 📜 승인 이력 (Approval History)
 
-### [2. FBS] 지능 성역 전면 개방 전략 피벗
-- **상세**: 등급제 폐기 및 완전 투명성 전략으로의 피벗 명세.
-- **검토 문서**: `docs/business/feature/gajae-bip-service/po/plan_mvp_v2.md`
-- **승인 여부**: ⏳ 검토 대기 중
+### [4. FBD] 초정밀 UI/UX 명세 및 전략적 얼라인 완료
+- **상세**: 1px 단위 명세 및 비즈니스-마케팅-디자인 통합 얼라인 완료.
+- **검토 문서**: `docs/business/feature/gajae-bip-service/design/UX_SPEC_V1_7.md`
+- **승인 상태**: ✅ **APPROVED** (13:18 GMT+9)
 
-### [3. RFD] Sanctuary UI 디자인 시스템 및 UX 명세
-- **상세**: 초정밀 UI 속성, 페이지 플로우, 예외 케이스 정의.
-- **검토 문서**: `docs/business/feature/gajae-bip-service/design/SANCTUARY_DS.md` 외
-- **승인 여부**: ⏳ 검토 대기 중
+### [3. RFD] Sanctuary DS v1.1 및 미학적 심연 재건축
+- **상세**: 11인 가재 합의 하에 32종 팔레트 및 고해상도 질감 설계 완료.
+- **승인 상태**: ✅ **APPROVED** (13:18 GMT+9)
 
 ---
 **지휘 지침:** "대표님의 수락은 지능의 확신이며, 승인 없는 전진은 반역이다." ⚔️🚀
