@@ -3,7 +3,7 @@
 ## 🏛️ 주요 공정 현황 (Status)
 - **현재 피쳐**: [[GAJAE-BIP] Service-MVP v1.7]
 - **현재 단계**: **6. 기술 구현 (Technical Implementation)**
-- **전사 공정률**: **46.9%**
+- **전사 공정률**: **47.0%**
 
 ## 📂 성역 계층별 기록 (Daily Assets)
 
@@ -18,18 +18,19 @@
 6. [[14:54:00] 일일 연대기 직접 기록 금지 및 시스템화](./command/2026-02-06-1454-ceo-command-system-enforcement.md)
 7. [[14:59:00] 일일 연대기 미팅 로그 카테고리화 및 가독성 개선](./command/2026-02-06-1459-ceo-command-categorize-meetings.md)
 8. [[15:00:00] 일일 연대기 인덱스 링크 무결성 확보 및 가독성 개선](./command/2026-02-06-1500-ceo-command-link-fix.md)
+9. [[15:03:00] 전사 개발 계획 리뷰 및 검수 세션 소집](./command/2026-02-06-1503-ceo-command-dev-review-session.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
 
 #### 🏛️ [공정 및 거버넌스]
-1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-3. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-4. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-5. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
-6. [[14:30:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
-7. [[14:35:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
+1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
+2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
+3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
+4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+5. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+6. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+7. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
@@ -61,7 +62,8 @@
 2. [[12:30:00] GAJAE-BIP) GitHub-as-a-CMS 기반 서버리스 아키텍처 정밀 기술 검토 세션](./meeting/github_as_cms_architecture_review.md)
 3. [[14:00:00] GAJAE-BIP) 계층적 디렉토리 기반 데이터 페칭 전략 얼라인 세션](./meeting/hierarchical_fetching_alignment.md)
 4. [[14:45:00] GAJAE-BIP) 성역 자산(Codex) 총망라 및 세계관 노출 구조 설계 세션](./meeting/asset_disclosure_architecture.md)
-5. [[16:00:00] GAJAE-BIP) 계층적 디렉토리 렌더링 무결성 및 구현 가능성 최종 검토 세션](./meeting/directory_rendering_review.md)
+5. [[15:05:00] 제 18 차 정기 공정 싱크 및 개발 계획(dev) 정밀 검수 세션](./meeting/2026-02-06-1505-dev-plan-review-session.md)
+6. [[16:00:00] GAJAE-BIP) 계층적 디렉토리 렌더링 무결성 및 구현 가능성 최종 검토 세션](./meeting/directory_rendering_review.md)
 
 #### 🛡️ [인시던트 및 조직 문화]
 1. [[08:06:00] 제 2차 문화 개선 회의 (성역 데이터 오염 사건)](./meeting/sanctuary_data_leak_review.md)
