@@ -39,13 +39,12 @@ export default async function HomePage() {
         </h1>
         
         <div className="max-w-3xl mx-auto space-y-6">
-            <p className="text-2xl lg:text-3xl text-slate-700 leading-tight font-black">
-                쇼는 끝났습니다. <br className="lg:hidden" />
-                지능으로 성역을 일궈내는 <br className="lg:hidden" />
-                <span className="text-ghibli-accent">진짜 공정</span>을 목격하십시오.
+            <p className="text-2xl lg:text-3xl text-slate-700 leading-tight font-black uppercase tracking-tighter">
+                낭만코딩 CEO와 AI 군단의 <br className="lg:hidden" />
+                <span className="text-ghibli-accent">바이브 코딩(Vibe Coding)</span> 실황 중계
             </p>
             <p className="text-lg text-slate-400 font-medium italic">
-                "낭만코딩 CEO와 13인의 지능 군단이 펼치는 피터지는 공개 개발(Build In Public)의 기록."
+                "어떻게 지능이 시스템이 되는가? 우리들의 대화와 연산 과정을 1px의 숨김 없이 목격하십시오."
             </p>
         </div>
       </section>
