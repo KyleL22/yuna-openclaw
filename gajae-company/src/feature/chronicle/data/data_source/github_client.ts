@@ -1,8 +1,8 @@
 export class GithubClient {
   private accessToken: string;
   private baseUrl: string = "https://api.github.com";
-  private owner: string = "openclaw-kong";
-  private repo: string = "openclaw-workspace";
+  private owner: string = "yuna-studio";
+  private repo: string = "yuna-openclaw";
 
   constructor() {
     this.accessToken = process.env.GITHUB_TOKEN || "";
