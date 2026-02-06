@@ -1,12 +1,12 @@
 import { ChronicleService } from "@/feature/chronicle/domain/service/chronicle_service";
 import { Heartbeat } from "@/common/component/heartbeat";
 import Link from "next/link";
-import { LayoutDashboard, History, Zap, ShieldCheck, Cpu, BookOpen, Terminal, Sparkles } from "lucide-react";
+import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 /**
- * [가재 컴퍼니] The Ghibli Style Dashboard (v1.3)
- * 의도: 지브리 감성 심화 및 한글 성물(The Trinity) 체제 안착.
+ * [가재 컴퍼니] The Ghibli Style Dashboard (v1.4)
+ * 의도: 대표님의 피드백을 반영하여 프로젝트 요약 카드 및 포트폴리오 진입점 강화.
  */
 
 export default async function HomePage() {
@@ -44,13 +44,61 @@ export default async function HomePage() {
         </p>
       </section>
 
-      {/* The Trinity: Core Features */}
+      {/* Main Feature: Project Status */}
+      <section className="mb-24 relative z-10">
+        <h2 className="text-sm font-black tracking-[0.3em] text-ghibli-accent uppercase mb-12 text-center flex items-center justify-center gap-4">
+            <FolderKanban size={16} /> 진행 중인 프로젝트 <FolderKanban size={16} />
+        </h2>
+        
+        <Link href="/portfolio" className="group">
+            <div className="ghibli-card p-12 bg-white/90 hover:border-ghibli-orange/50 transition-all duration-700">
+                <div className="flex flex-col lg:flex-row justify-between gap-12">
+                    <div className="flex-1">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-ghibli-orange/10 border border-ghibli-orange/20 text-ghibli-orange text-xs font-black mb-6 uppercase tracking-widest">
+                            In Progress
+                        </div>
+                        <h3 className="text-4xl font-black text-ghibli-text mb-4 group-hover:text-ghibli-orange transition-colors">가재 컴퍼니 BIP 서비스</h3>
+                        <p className="text-lg text-slate-500 font-medium leading-relaxed mb-8">
+                            1인 CEO와 AI 군단의 실전 협업 공정을 제품화하여 지능형 조직의 표준을 공유하는 성역 아카이브.
+                        </p>
+                        <div className="flex items-center gap-6">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">현재 피쳐</span>
+                                <span className="font-black text-ghibli-text">MVP 개발 (Service-MVP v1.7)</span>
+                            </div>
+                            <div className="w-[2px] h-8 bg-slate-100" />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">현재 공정</span>
+                                <span className="font-black text-ghibli-accent">Step 13: 최종 봉인 및 박제</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-col justify-center items-center lg:items-end min-w-[240px]">
+                        <div className="relative mb-6">
+                            <svg className="w-32 h-32 transform -rotate-90">
+                                <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364.4} strokeDashoffset={364.4 * (1 - 0.996)} className="text-ghibli-orange transition-all duration-1000" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-2xl font-mono font-black text-ghibli-text">99.6%</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-ghibli-orange font-black group-hover:translate-x-2 transition-transform">
+                            포트폴리오 자세히 보기 <ArrowRight size={20} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
+      </section>
+
+      {/* The Trinity: Core Assets */}
       <section className="mb-24 relative z-10">
         <h2 className="text-sm font-black tracking-[0.3em] text-ghibli-accent uppercase mb-12 text-center flex items-center justify-center gap-4">
             <Sparkles size={16} /> 3대 성물 <Sparkles size={16} />
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* The Law: Constitution */}
           <Link href="https://github.com/yuna-studio/yuna-openclaw/blob/main/docs/core/legal/CONSTITUTION.md" target="_blank" className="group">
             <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-accent flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
@@ -58,27 +106,19 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">통합 헌법</h3>
               <p className="text-slate-600 leading-relaxed font-medium">가재 군단의 뼈대와 15대 리더십 원칙이 담긴 불변의 법전.</p>
-              <div className="mt-8 flex items-center gap-2 text-ghibli-accent font-bold text-sm">
-                성역의 법전 읽기 ➔
-              </div>
             </div>
           </Link>
 
-          {/* The Pulse: Daily Chronicle */}
           <Link href="/timeline" className="group">
             <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-green flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <History size={32} />
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">일일 연대기</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">가재 군단이 매일 격돌하고 합의하는 지능의 박동, 실시간 기록.</p>
-              <div className="mt-8 flex items-center gap-2 text-ghibli-green font-bold text-sm">
-                지능의 박동 확인 ➔
-              </div>
+              <p className="text-slate-600 leading-relaxed font-medium">실시간으로 올라오는 가재들의 일하는 방식, 생생한 협업의 기록.</p>
             </div>
           </Link>
 
-          {/* The Will: CEO Command */}
           <Link href="/timeline?filter=command" className="group">
             <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-orange flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
@@ -86,50 +126,26 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">CEO 명령</h3>
               <p className="text-slate-600 leading-relaxed font-medium">시스템의 방향을 결정짓는 대표님의 지엄한 지시 레이어.</p>
-              <div className="mt-8 flex items-center gap-2 text-ghibli-orange font-bold text-sm">
-                의지의 기록 열람 ➔
-              </div>
             </div>
           </Link>
         </div>
       </section>
 
-      {/* Real-time Status Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 mb-20">
-        <div className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <ShieldCheck className="text-ghibli-green" size={24} />
+      {/* Intelligence Status */}
+      <div className="flex justify-center relative z-10 mb-20">
+        <Link href="/personnel" className="ghibli-card px-12 py-8 flex items-center gap-8 bg-white/50 backdrop-blur-sm group hover:border-ghibli-blue/50 transition-all">
+          <div className="flex items-center gap-4 border-r-2 border-slate-100 pr-8">
+            <Cpu className="text-ghibli-blue" size={32} />
             <div>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Integrity</p>
-              <p className="text-sm font-black text-ghibli-text">시스템 무결성 수호 중</p>
+              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase leading-none mb-1">Cognition</p>
+              <p className="text-xl font-black text-ghibli-text group-hover:text-ghibli-blue transition-colors leading-none">12개 지능 노드 활성</p>
             </div>
           </div>
-          <div className="w-3 h-3 rounded-full bg-ghibli-green animate-pulse" />
-        </div>
-        
-        <Link href="/personnel" className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm group hover:border-ghibli-blue/50 transition-all">
-          <div className="flex items-center gap-4">
-            <Cpu className="text-ghibli-blue" size={24} />
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Cognition</p>
-              <p className="text-sm font-black text-ghibli-text group-hover:text-ghibli-blue transition-colors">12개 지능 노드 활성</p>
-            </div>
+          <div className="flex items-center gap-2 text-ghibli-blue font-bold text-sm">
+            지능 성역 인물 사전 확인 <ArrowRight size={16} />
           </div>
-          <div className="w-3 h-3 rounded-full bg-ghibli-blue animate-pulse group-hover:scale-150 transition-transform" />
+          <div className="w-3 h-3 rounded-full bg-ghibli-blue animate-pulse group-hover:scale-150 transition-transform ml-4" />
         </Link>
-
-        <div className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <Zap className="text-ghibli-orange" size={24} />
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Velocity</p>
-              <p className="text-sm font-black text-ghibli-text">공정률 99.2% 돌파</p>
-            </div>
-          </div>
-          <div className="h-2 w-24 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
-            <div className="h-full bg-ghibli-orange w-[99.2%]" />
-          </div>
-        </div>
       </div>
     </div>
   );

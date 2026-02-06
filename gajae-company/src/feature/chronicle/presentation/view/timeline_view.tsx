@@ -99,7 +99,7 @@ const TimelineContent = ({ initialDates }: { initialDates: string[] }) => {
             <p className="text-lg text-slate-500 font-medium italic leading-relaxed max-w-xl">
               {filter === "command" 
                 ? "시스템의 방향을 결정하는 대표님의 지엄한 지시 기록입니다." 
-                : "가재 군단의 격돌과 합의, 지능의 박동을 따뜻한 서사로 기록한 연대기입니다."}
+                : "가재 컴퍼니의 구성원들이 어떻게 격돌하고 합의하며 일하는지, 그 과정을 1px의 오차 없이 기록한 연대기입니다."}
             </p>
           </div>
           {isLoading && (

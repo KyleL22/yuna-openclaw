@@ -1,13 +1,14 @@
-import Link from "next/link";
-import { Sparkles, ArrowLeft, Twitter, ExternalLink, ShieldCheck, Cpu, Code, Palette, Zap, Gavel, Users, Heart } from "lucide-react";
+import Link from "next/image";
+import { Sparkles, ArrowLeft, Twitter, ExternalLink, ShieldCheck, Cpu, Code, Palette, Zap, Gavel, Users, Heart, Crown } from "lucide-react";
+import NextLink from "next/link";
 
 /**
- * [가재 컴퍼니] 지능 성역 인물 사전 (v1.0)
+ * [가재 컴퍼니] 지능 성역 인물 사전 (v1.1)
  * 의도: CEO 낭만코딩과 11인 가재의 정체성을 시각화하여 지능형 조직의 '인격'을 부여함.
  */
 
 const GAJAE_LIST = [
-  { id: "CE0F4D01", name: "낭만코딩", role: "Human CEO", desc: "지능이 자본이 되는 시대를 직접 빌드하며 증명하는 솔로프레너. 가재 군단의 창조자.", icon: Users, color: "text-ghibli-text", link: "https://x.com/romantic_coding" },
+  { id: "CE0F4D01", name: "낭만코딩", role: "Human CEO", desc: "지능이 자본이 되는 시대를 직접 빌드하며 증명하는 솔로프레너. 가재 군단의 창조자.", icon: Crown, color: "text-ghibli-orange", link: "https://x.com/romantic_coding" },
   { id: "76F92A81", name: "수행원", role: "Core OS", desc: "가재 군단 총괄 운영 지능. 대표님의 의지를 즉시 시스템화하는 충직한 집행관.", icon: ShieldCheck, color: "text-ghibli-accent" },
   { id: "B2D6E8C4", name: "DEV가재", role: "Senior Architect", desc: "엄격한 클린 아키텍처와 100% Null Safety를 사수하는 기술의 수호자.", icon: Code, color: "text-ghibli-blue" },
   { id: "F1A93D72", name: "UX가재", role: "Aesthetic Guardian", desc: "1px의 오차도 허용하지 않는 결벽증적 완벽주의자이자 지능 미학의 집행자.", icon: Palette, color: "text-[#ff7eb9]" },
@@ -20,10 +21,10 @@ export default function PersonnelPage() {
   return (
     <div className="container mx-auto px-6 py-12">
       {/* Back Button */}
-      <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-ghibli-accent transition-colors mb-12 group">
+      <NextLink href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-ghibli-accent transition-colors mb-12 group">
         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        <span className="font-bold">대시보드로 복귀</span>
-      </Link>
+        <span className="font-bold uppercase tracking-widest text-xs">Back to Dashboard</span>
+      </NextLink>
 
       {/* Header */}
       <header className="mb-20">
@@ -60,11 +61,11 @@ export default function PersonnelPage() {
             </p>
 
             {person.link ? (
-                <Link href={person.link} target="_blank" className="inline-flex items-center gap-2 text-blue-500 font-bold text-sm hover:underline">
+                <NextLink href={person.link} target="_blank" className="inline-flex items-center gap-2 text-blue-500 font-bold text-sm hover:underline">
                     <Twitter size={16} />
-                    X.com Profile
+                    CEO's X Profile
                     <ExternalLink size={14} />
-                </Link>
+                </NextLink>
             ) : (
                 <div className="flex items-center gap-2 text-ghibli-accent/50 font-mono text-[10px] font-black uppercase tracking-tighter">
                     Status: Online & Computing

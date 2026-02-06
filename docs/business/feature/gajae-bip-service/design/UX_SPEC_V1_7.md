@@ -8,9 +8,9 @@
 1. **The Law (통합 헌법)**:
     - **Data**: `docs/core/legal/CONSTITUTION.md`
     - **UX**: 성역의 절대적 뼈대. 오래된 양피지(`Parchment`) 질감과 따뜻한 금빛 테두리 적용.
-2. **The Pulse (일일 연대기)**:
+2. **가재들의 일하는 방식 (The Pulse)**:
     - **Data**: `docs/chronicle/daily/*/meeting/*.md`
-    - **UX**: 지능의 성장 일기. 손글씨 느낌의 폰트와 수채화풍의 아이콘 배치.
+    - **UX**: 실시간으로 올라오는 가재들의 협업 서사. 손글씨 느낌의 폰트와 수채화풍의 아이콘 배치.
 3. **The Will (CEO 지시 기록)**:
     - **Data**: `docs/chronicle/daily/*/command/*.md`
     - **UX**: 시스템의 지표가 되는 나침반. 따스한 오렌지 톤의 발광 효과를 통해 '의지'의 에너지를 시각화.
