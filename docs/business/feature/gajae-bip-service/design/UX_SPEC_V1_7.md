@@ -1,26 +1,24 @@
-# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.5)
+# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.6)
 
-## 7. 웹 서비스 특화 최적화 명세 (Web-specific Specs)
+## 8. Sanctuary Codex: 세계관 탐색 시스템 (World-view Navigator)
 
-본 서비스는 웹 브라우저 환경을 최우선으로 하며, 다음과 같은 웹 특화 인터랙션과 기술 규격을 준수한다.
+성역의 모든 지식 자산을 계층적으로 노출하며, 유저가 군단의 정체성을 탐험할 수 있도록 설계한다.
 
-### 7.1 브라우저 인터랙션 (Mouse & Hover)
-- **Intelligence Aura Effect**:
-    - **Trigger**: 마우스 커서가 `Thought Card` 영역에 진입할 때.
-    - **Visual**: 커서 위치를 중심으로 반지름 `150px`의 은은한 `intel-neon` 광채(Radial Gradient)가 카드 배경에 동적으로 추종.
-    - **CSS Data**: `background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(0, 240, 255, 0.15), transparent 80%)`.
+### 8.1 3대 핵심 섹션 구조 (Data Hierarchy)
+1. **Core Sector (The Foundation)**:
+    - **Data**: `CONSTITUTION.md`, `RULE_PO_INTELLIGENCE.md`, `TEMPLATE_MAPPING.md`
+    - **UI**: 황금색(`Gold-leaf`) 글로우 테두리 적용. 시스템의 심장부임을 시각화.
+2. **Governance Sector (The Discipline)**:
+    - **Data**: `personnel/*.md`, `approvals/*/GATE.md`, `incident/*.md`
+    - **UI**: 냉철한 메탈 실버(`surface-metal`) 테마. 규율과 통제의 상징.
+3. **Business Sector (The Creation)**:
+    - **Data**: `plan_mvp_v2.md`, `design/*.md`, `docs/technical/*.md`
+    - **UI**: 활동성 네온 블루(`intel-neon`) 테마. 연산의 결과물임을 강조.
 
-### 7.2 웹 확산 엔진 (Deep-Link Engine)
-- **Anchor Logic**: 각 사고 기록 블록은 고유한 `id` (예: `#20260206-1234`)를 보유함.
-- **Shared Experience**: 외부에서 해당 링크로 접속 시, 부드러운 `Smooth Scroll`과 함께 해당 카드가 3회 점멸하며 유저 시선을 고정함.
-
-### 7.3 기술적 웹 표준 (Technical Standard)
-- **Framework**: Next.js (App Router) + Server Components.
-- **Data Navigation**: 
-    - `meeting/` 하위의 **날짜별 디렉토리 구조**를 탐색기(Explorer) UI로 직결 렌더링한다.
-    - 파일명의 `HHMM` 시간 데이터를 파싱하여 UI상에서 자동 정렬을 수행한다.
-- **SEO**: 피쳐명, 가재 ID, 의사결정 요약을 메타데이터로 자동 추출하여 검색 엔진에 노출.
-- **Platform Support**: Chrome, Safari, Edge (Desktop & Mobile Browser) 완벽 대응.
+### 8.2 인터랙티브 트리 로직 (Interactive Tree)
+- **Source**: `docs/core/templates/TEMPLATE_MAPPING.md`에 정의된 파일을 1:1로 렌더링.
+- **Action**: 노드 클릭 시 해당 마크다운 문서를 [Module 3] 전용 뷰어(Codex Viewer)로 즉시 로딩.
+- **Deep-link**: 각 문서 진입 시 브라우저 URL에 `?path=docs/core/legal/CONSTITUTION.md` 쿼리 파라미터 자동 생성.
 
 ---
-**UX가재 : 웹의 본질은 연결이며, 브라우저를 넘어 전파되는 지능의 실체를 빚어냅니다.** ⚔️🚀
+**UX가재 : 성역의 지도는 군단의 자부심입니다. 모든 지식 자산이 유저에게 경외심으로 치환되도록 설계했습니다.** ⚔️🚀
