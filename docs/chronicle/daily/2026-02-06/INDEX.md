@@ -44,6 +44,7 @@
 32. [[17:17:00] 기술 구현 완료 및 최종 배포 인프라 전파 현황 점검](./command/2026-02-06-1717-ceo-command-implementation-status.md)
 33. [[17:19:00] 컨텍스트 임계점 분석 및 고밀도 확장 전략 수립](./command/2026-02-06-1719-ceo-command-context-scaling.md)
 34. [[17:22:00] Firebase 실전 배포 성공 및 성역 URL 추출](./command/2026-02-06-1722-ceo-command-deployment-success.md)
+35. [[17:31:00] Firebase 프로젝트 ID 매핑 오류 정정 및 무결성 복구](./command/2026-02-06-1731-ceo-command-firebase-id-fix.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
@@ -55,13 +56,14 @@
 4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제18차 정기 공정 싱크 미팅 (3:30 PM)](./meeting/18th_progress_report.md)
 5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제23차 정기 공정률 보고 (5:00 PM)](./meeting/23rd_progress_report.md)
 6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
-7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
-8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-9. [[00:00:00] 🏛️ 제22차 정기 공정 싱크 미팅 (30분 단위)](./meeting/22nd_sync_meeting.md)
-10. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-11. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-12. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-13. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제24차 정기 공정률 보고 (5:30 PM)](./meeting/24th_progress_report.md)
+8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
+9. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
+10. [[00:00:00] 🏛️ 제22차 정기 공정 싱크 미팅 (30분 단위)](./meeting/22nd_sync_meeting.md)
+11. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+12. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+13. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+14. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
