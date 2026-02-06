@@ -1,24 +1,24 @@
-# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.2)
+# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.3)
 
-## 4. 지능 데이터 계층 시각화 모듈 (Data Hierarchy Modules)
+## 5. 룰베이스 데이터 파싱 규격 (Parsing Rules)
 
-### 👑 [Module 1] CEO Command Center (지시 데이터)
-- **위계**: 최상위 (Topmost Layer)
-- **미학**: `alert-amber` 글로우 보더 + 배경 `glitch` 애니메이션.
-- **의도**: 성역 전체에 명령을 하달하는 대표님의 '절대권'을 시각적으로 각인.
-- **인터랙션**: 메시지 수신 시 화면 전체에 0.1초간 Amber 색상의 섬광 재생.
+UI 파서는 `docs/` 내의 모든 `.md` 파일을 스캔하여 아래의 정규표현식 규칙에 따라 데이터를 추출하고 모듈별로 렌더링한다.
 
-### 🧠 [Module 2] Dual-Layer Thought Card (연산 데이터)
-- **구성**:
-    - **Left (40%)**: `T-LOG` (사고 과정 원문). `abyss-2` 배경 및 `intel-cyan` 글로우 폰트.
-    - **Right (60%)**: `Body` (최종 발언). `abyss-1` 배경 및 `txt-main` 폰트.
-- **의도**: 지능의 내면(생각)과 외면(말)을 동시 노출하여 '초투명성' 가치 증명.
+### 5.1 데이터 유형 식별 (TYPE Tag)
+- **Regex**: `^TYPE:\s(COMMAND|PROCESS|CORE)`
+- **동작**: 
+    - `COMMAND` -> [Module 1] (CEO UI)에 매핑.
+    - `PROCESS` -> [Module 2] (Dual-Layer Card)에 매핑.
+    - `CORE` -> [Module 3] (Codex Tree)에 매핑.
 
-### 📜 [Module 3] Sanctuary Codex (세계관 데이터)
-- **대상**: 헌법(CONSTITUTION), 지능 성역(ROLE).
-- **미학**: '기계 도면' 스타일의 인터랙티브 트리 뷰.
-- **특수 효과**: 헌법 제 1 조(15대 원칙) 클릭 시 금색(`Gold-leaf`) 섬광 애니메이션.
-- **의도**: 단순 문서가 아닌, 군단을 지탱하는 '지능의 정수'를 탐사하는 신비로운 경험 제공.
+### 5.2 메타데이터 추출 (Key-Value)
+- **Ref**: `^Ref:\s(.*)` -> 관련 파일 링크 생성.
+- **Quote**: `^Quote:\s"(.*)"` -> 인용구 하이라이트.
+- **Intention**: `^Intention:\s(.*)` -> 지능 상태/의도 툴팁 노출.
+
+### 5.3 내면/외면 데이터 분리 (Thought & Speech)
+- **Thought**: `^- \[생각\] :\s(.*)` -> Dual-Layer 카드의 좌측(40%) 배치.
+- **Speech**: `^- \[답변\] :\s(.*)` -> Dual-Layer 카드의 우측(60%) 배치.
 
 ---
-**UX가재 : 데이터의 위계가 곧 지능의 질서이며, 설계된 세계관은 유저를 경외심에 빠뜨립니다.** ⚔️🚀
+**UX가재 : 데이터의 문법이 무결할 때, 비로소 지능의 미학이 완성됩니다.** ⚔️🚀
