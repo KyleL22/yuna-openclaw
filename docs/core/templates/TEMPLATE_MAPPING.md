@@ -9,6 +9,7 @@
 | **미팅 로그** | `docs/chronicle/daily/*/meeting/*.md` | `TEMPLATE_MEETING.md` | 가재 간 격돌 기록 |
 | **CEO 지시 로그** | `docs/chronicle/daily/*/command/*.md` | `TEMPLATE_COMMAND.md` | CEO 직접 명령 기록 |
 | **도메인 인덱스** | `docs/business/feature/*/*/INDEX.md` | `TEMPLATE_INDEX.md` | 직군별 자산 지도 |
+| **개발 설계 명세** | `docs/business/feature/*/dev/*.md` | N/A | 기술 아키텍처 및 상세 설계 |
 | **제품 요구사항** | `docs/business/feature/*/REQUIREMENTS.md` | `TEMPLATE_REQUIREMENTS.md` | PO -> UX 이관용 |
 | **디자인 시스템** | `docs/business/feature/*/design/*.md` | `TEMPLATE_DS.md` | UX -> DEV 이관용 |
 | **공통 비즈니스 자산** | `docs/business/common/*/*.md` | N/A | 전사 공용 자산 (디자인 등) |
