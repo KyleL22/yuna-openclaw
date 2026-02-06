@@ -21,7 +21,7 @@
 
 ### [3. RFD] Sanctuary UI 디자인 시스템 및 UX 명세
 - **상세**: 초정밀 UI 속성, 페이지 플로우, 예외 케이스 정의.
-- **검토 문서**: `docs/technical/design/SANCTUARY_DS.md` 외
+- **검토 문서**: `docs/business/feature/gajae-bip-service/design/SANCTUARY_DS.md` 외
 - **승인 여부**: ⏳ 검토 대기 중
 
 ---
