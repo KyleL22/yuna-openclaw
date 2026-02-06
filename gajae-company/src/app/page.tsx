@@ -2,12 +2,12 @@ import { ChronicleService } from "@/feature/chronicle/domain/service/chronicle_s
 import { Heartbeat } from "@/common/component/heartbeat";
 import { LiveChroniclePulse } from "@/feature/chronicle/presentation/component/live_chronicle_pulse";
 import Link from "next/link";
-import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRight } from "lucide-react";
+import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRight, Eye } from "lucide-react";
 import Image from "next/image";
 
 /**
- * [가재 컴퍼니] The Ghibli Style Dashboard (v1.7)
- * 의도: 대표님의 지시에 따라 3대 성물 및 지능 노드 섹션의 워딩을 더 직관적이고 센스 있게 피벗함.
+ * [가재 컴퍼니] The Ghibli Style Dashboard (v1.8)
+ * 의도: 대표님의 지시에 따라 'BIP' 명칭을 '공개 개발 (Build In Public)'로 정규화하고 서사를 보강함.
  */
 
 export default async function HomePage() {
@@ -21,6 +21,9 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       <section className="mb-16 text-center relative z-10">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ghibli-accent/10 border border-ghibli-accent/20 text-ghibli-accent text-xs font-black mb-8 uppercase tracking-widest animate-fade-in">
+            <Eye size={14} /> Build In Public Sanctuary
+        </div>
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter mb-6 text-ghibli-text">
           가재 컴퍼니
         </h1>
@@ -37,7 +40,7 @@ export default async function HomePage() {
       {/* Main Feature: Project Status */}
       <section className="mb-24 relative z-10">
         <h2 className="text-sm font-black tracking-[0.3em] text-ghibli-accent uppercase mb-12 text-center flex items-center justify-center gap-4">
-            <FolderKanban size={16} /> 진행 중인 프로젝트 <FolderKanban size={16} />
+            <FolderKanban size={16} /> 실시간 공개 개발 현황 <FolderKanban size={16} />
         </h2>
         
         <Link href="/portfolio" className="group">
@@ -47,9 +50,9 @@ export default async function HomePage() {
                         <div className="inline-block px-4 py-1.5 rounded-full bg-ghibli-orange/10 border border-ghibli-orange/20 text-ghibli-orange text-xs font-black mb-6 uppercase tracking-widest">
                             In Progress
                         </div>
-                        <h3 className="text-4xl font-black text-ghibli-text mb-4 group-hover:text-ghibli-orange transition-colors">가재 컴퍼니 BIP 서비스</h3>
+                        <h3 className="text-4xl font-black text-ghibli-text mb-4 group-hover:text-ghibli-orange transition-colors">가재 컴퍼니 공개 개발 성역</h3>
                         <p className="text-lg text-slate-500 font-medium leading-relaxed mb-8">
-                            1인 CEO와 AI 군단의 실전 협업 공정을 제품화하여 지능형 조직의 표준을 공유하는 성역 아카이브.
+                            1인 CEO와 AI 군단의 실전 협업 공정을 실시간으로 투명하게 공개(Build In Public)하여, 지능형 조직의 새로운 표준을 박제하는 프로젝트입니다.
                         </p>
                         <div className="flex items-center gap-6">
                             <div className="flex flex-col">
