@@ -2,18 +2,18 @@
 
 ## 8. Sanctuary Codex: 세계관 탐색 시스템 (World-view Navigator)
 
-성역의 모든 지식 자산을 계층적으로 노출하며, 유저가 군단의 정체성을 탐험할 수 있도록 설계한다.
+성역의 핵심 지식 자산을 '3대 성물'로 정의하고, 이를 유저가 군단의 정체성을 탐험할 수 있도록 가장 아름답게 노출한다.
 
-### 8.1 3대 핵심 섹션 구조 (Data Hierarchy)
-1. **Core Sector (The Foundation)**:
-    - **Data**: `CONSTITUTION.md`, `RULE_PO_INTELLIGENCE.md`, `TEMPLATE_MAPPING.md`
-    - **UI**: 황금색(`Gold-leaf`) 글로우 테두리 적용. 시스템의 심장부임을 시각화.
-2. **Governance Sector (The Discipline)**:
-    - **Data**: `personnel/*.md`, `approvals/*/GATE.md`, `incident/*.md`
-    - **UI**: 냉철한 메탈 실버(`surface-metal`) 테마. 규율과 통제의 상징.
-3. **Business Sector (The Creation)**:
-    - **Data**: `plan_mvp_v2.md`, `design/*.md`, `docs/technical/*.md`
-    - **UI**: 활동성 네온 블루(`intel-neon`) 테마. 연산의 결과물임을 강조.
+### 8.1 3대 핵심 피쳐 구조 (The Trinity)
+1. **The Law (통합 헌법)**:
+    - **Data**: `docs/core/legal/CONSTITUTION.md`
+    - **UX**: 성역의 절대적 뼈대. 황금색(`Gold-leaf`) 발광 효과와 함께 고정 배치.
+2. **The Pulse (일일 연대기)**:
+    - **Data**: `docs/chronicle/daily/*/meeting/*.md`
+    - **UX**: 지능의 격돌 기록. 시간순 타임라인 노출 및 개별 미팅 로그의 '5대 단계' 시각화.
+3. **The Will (CEO 지시 기록)**:
+    - **Data**: `docs/chronicle/daily/*/command/*.md`
+    - **UX**: 시스템의 방향을 결정하는 최상위 의지. 'Command/ 레이어'의 명령 전문을 압도적인 권위의 UI로 렌더링.
 
 ### 8.3 계층적 미팅 로그 탐색 (Hierarchical Meeting Logs)
 - **Folder-to-Timeline Mapping**: 

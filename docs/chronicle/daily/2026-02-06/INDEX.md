@@ -26,21 +26,23 @@
 14. [[16:28:00] 초고속 구현 공정 개시 및 데모 배포 지시](./command/2026-02-06-1628-ceo-command-start-implementation.md)
 15. [[16:30:00] 인시던트 템플릿 표준화 및 규격 적용](./command/2026-02-06-1630-ceo-command-incident-template.md)
 16. [[16:30:00] README.md 전면 개편 및 Wow the Customer 브랜딩](./command/2026-02-06-1630-ceo-command-readme-branding.md)
+17. [[16:32:00] 가재 성역 3대 핵심 피쳐 정의 및 전략 재정렬](./command/2026-02-06-1632-ceo-command-the-trinity.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
 
 #### 🏛️ [공정 및 거버넌스]
-1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
-2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제20차 정기 공정 싱크 미팅 (4:30 PM)](./meeting/20th_progress_report.md)
-3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제18차 정기 공정 싱크 미팅 (3:30 PM)](./meeting/18th_progress_report.md)
-4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
-5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
-6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-8. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-9. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-10. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제21차 정기 공정률 보고 (4:30 PM)](./meeting/21st_progress_report.md)
+2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
+3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제20차 정기 공정 싱크 미팅 (4:30 PM)](./meeting/20th_progress_report.md)
+4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제18차 정기 공정 싱크 미팅 (3:30 PM)](./meeting/18th_progress_report.md)
+5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
+6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
+7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
+8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+9. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+10. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+11. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
