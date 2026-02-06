@@ -3,9 +3,9 @@ import { ChronicleService } from "@/feature/chronicle/domain/service/chronicle_s
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { date: string } }
+  { params }: { params: Promise<{ date: string }> }
 ) {
-  const date = params.date;
+  const { date } = await params;
   const service = new ChronicleService();
   
   try {

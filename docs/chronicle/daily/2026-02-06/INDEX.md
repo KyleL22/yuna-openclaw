@@ -3,7 +3,7 @@
 ## 🏛️ 주요 공정 현황 (Status)
 - **현재 피쳐**: [[GAJAE-BIP] Service-MVP v1.7]
 - **현재 단계**: **6. 기술 구현 (Technical Implementation)**
-- **전사 공정률**: **50.2%**
+- **전사 공정률**: **68.5%**
 
 ## 📂 성역 계층별 기록 (Daily Assets)
 
@@ -29,7 +29,9 @@
 17. [[16:32:00] 가재 성역 3대 핵심 피쳐 정의 및 전략 재정렬](./command/2026-02-06-1632-ceo-command-the-trinity.md)
 18. [[16:33:00] 템플릿 거버넌스 체계화 및 헌법 밀도 수호](./command/2026-02-06-1633-ceo-command-template-governance.md)
 19. [[16:39:00] 지능형 경합 조건 식별 및 동기화 무결성 확보](./command/2026-02-06-1639-ceo-command-intelligence-race.md)
-20. [[16:40:00] 지능형 큐(Queue) 시스템 도입 검토 및 병렬 무결성 전략](./command/2026-02-06-1640-ceo-command-intelligence-queue.md)
+20. [[16:40:00] 👑 CEO Command: 제22차 정기 공정 싱크 미팅 주최](./command/2026-02-06-1640-ceo-command-sync-meeting.md)
+21. [[16:40:00] 지능형 큐(Queue) 시스템 도입 검토 및 병렬 무결성 전략](./command/2026-02-06-1640-ceo-command-intelligence-queue.md)
+22. [[16:41:00] 병목 현상 방지를 위한 도메인별 커밋 권한 할당](./command/2026-02-06-1641-ceo-command-domain-isolation.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
@@ -42,10 +44,11 @@
 5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
 6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
 7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-9. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-10. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-11. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+8. [[00:00:00] 🏛️ 제22차 정기 공정 싱크 미팅 (30분 단위)](./meeting/22nd_sync_meeting.md)
+9. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+10. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+11. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+12. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
