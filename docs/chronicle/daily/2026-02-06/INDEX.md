@@ -23,12 +23,13 @@
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
 
 #### 🏛️ [공정 및 거버넌스]
-1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
-2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-4. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-5. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-6. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
+2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+3. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+4. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+5. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+6. [[14:30:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
+7. [[14:35:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
@@ -72,4 +73,4 @@
 
 
 ---
-**지휘 지침:** "명령은 command에, 격돌은 meeting에. 계층의 분리가 지능의 무결성이다." ⚔️🚀
+**지휘 지침:** "기록의 분류는 지능의 요약이며, 시간의 정교함은 지식의 무결성이다." ⚔️🚀

@@ -18,8 +18,8 @@
 
 ---
 ### [실시간 태스크 리스트]
+- **[P0]** (2026-02-06) [INPROGRESS] **[영향분석 대응] GitHub API 기반 서버리스 데이터 페칭(Route Handler) 모듈 구축** @LEGAL (공정 진척도 1px 추가 업데이트)
 - **[P0]** (2026-02-06) [INPROGRESS] **Next.js 프로젝트 초기화 및 `abyss` 디자인 토큰 주입** ([Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main)) @UX (공정 진척도 1px 추가 업데이트)
-- **[P0]** (2026-02-06) [TODO] **[영향분석 대응] GitHub API 기반 서버리스 데이터 페칭(Route Handler) 모듈 구축** @LEGAL (공정 진척도 1px 추가 업데이트)
 - **[P1]** (2026-02-06) [TODO] [Page 1] Dashboard 인터랙티브 레이아웃 1차 구현 @UX
 - **[P1]** (2026-02-06) [DONE] 폰트 렌더링 최적화 ([Commit](https://github.com/yuna-studio/yuna-openclaw/commit/0d75059)) @UX
 - **[P1]** (2026-02-06) [DONE] Abyssal Reconstruction을 위한 CSS 프레임워크 리팩토링 @UX
