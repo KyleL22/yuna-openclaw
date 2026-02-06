@@ -5,6 +5,7 @@ export interface Chronicle {
   title: string;
   path: string;
   content?: string;
+  rawPath?: string;
 }
 
 export interface DailyIndex {
