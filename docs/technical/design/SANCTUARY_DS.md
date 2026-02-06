@@ -1,41 +1,27 @@
-# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.6
+# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.7
 
-## 1. Concept: "The Abyssal Sanctuary"
-- **Identity**: 기계의 심연 속에서 타오르는 지능의 불꽃.
-- **Mood**: Heavy, Authoritative, High-Contrast, Hyper-Modern.
+## 1. Brand Concept: "The Mechanical Soul"
+- **Identity**: 기계의 차가움 속에 타오르는 지능의 감정을 시각화.
+- **Mood**: High-Resolution Depth, Luminous Precise.
 
-## 2. Advanced Color Palette (24-Step)
-### 🕳️ Abyssal Grayscale (Backgrounds & Surfaces)
-| Token | HEX | Usage |
-| :--- | :--- | :--- |
-| `abyss-0` | `#000000` | Canvas Base |
-| `abyss-1` | `#050505` | Main Background |
-| `abyss-2` | `#0A0A0A` | Section Card |
-| `abyss-3` | `#111111` | Surface Hover |
-| `abyss-4` | `#1A1A1A` | Border / Divider |
+## 2. Emotional Intelligence Feedback (New)
+*지능의 상태에 따라 'Heartbeat Wave'의 컬러가 동적으로 변화함.*
 
-### ⚡ Flash Neon (Interaction & Alerts)
-| Token | HEX | Alpha/Glow | Usage |
+| 지능 상태 (State) | Token | HEX | 의미 |
 | :--- | :--- | :--- | :--- |
-| `intel-cyan` | `#00F0FF` | 100% | Active Thinking |
-| `intel-glow` | `#00F0FF` | 20% (Blur 10px) | Active Pulse |
-| `alert-amber` | `#FFBF00` | 100% | Critical Decision |
-| `glitch-pink` | `#FF007A` | 100% | Error / Warning |
+| **Idle** | `wave-calm` | `#00F0FF` (10% Opacity) | 안정적 연산 대기 |
+| **Thinking** | `wave-active`| `#00F0FF` (30% Opacity) | 집중 연산 및 사고 전개 |
+| **Deciding** | `wave-amber` | `#FFBF00` (40% Opacity) | 치명적 의사결정 시점 |
+| **Warning** | `wave-pink`  | `#FF007A` (50% Opacity) | 규율 위반 및 인시던트 발생 |
 
-## 3. Advanced Typography (12-Step)
-### 🔡 Brand Display Font
-- **Family**: `Archivo Black` (or Heavy Display Alternatives)
-- **Styles**: `Display-XL(64px)`, `Display-LG(48px)`, `Display-MD(32px)`
+## 3. Luminous Typography (Added)
+- **Effect**: 모든 `JetBrains Mono` 폰트에 `text-shadow` 데이터 적용.
+- **Data**: `0px 0px 4px rgba(0, 240, 255, 0.4)` - 지능이 빛을 내뿜는 시각적 메타포.
 
-### 🔡 Interface & Content Font
-- **Family**: `Inter` / `JetBrains Mono` (Thinking Log)
-- **Styles**: `Body-LG(20px)`, `Body-MD(16px)`, `Body-SM(14px)`, `Body-XS(12px)`
-- **Special**: `T-LOG(14px/Mono)`, `T-DECISION(16px/Mono/Bold)`
-
-## 4. Texture & Effects
-- **Scanline Texture**: 배경 2% 투명도의 가로 라인 패턴 (CRT 느낌).
-- **Glass-Border**: `1px / White 10%` 세밀한 경계 표현.
-- **Decision Glow**: 의사결정 블록 주변 `alert-amber` 색상의 은은한 외부 광채 효과.
+## 4. Abyssal Layering (Added)
+*공간의 깊이감을 위한 4단계 중첩 그림자(Box-shadow) 데이터.*
+- **Token**: `depth-abyss`
+- **Data**: `0 10px 30px rgba(0,0,0,0.5), 0 6px 10px rgba(0,0,0,0.3), 0 2px 2px rgba(255,255,255,0.05)`
 
 ---
-**UX가재 : 미학의 해상도는 지능의 성의이며, 1px의 치밀함이 곧 브랜드의 무게입니다.** ⚔️🚀
+**UX가재 : 영감은 데이터의 융합이며, 1px의 광채가 지능의 생명력을 증명합니다.** ⚔️🚀
