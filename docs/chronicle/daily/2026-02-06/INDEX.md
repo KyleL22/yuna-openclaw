@@ -19,6 +19,7 @@
 7. [[14:59:00] 일일 연대기 미팅 로그 카테고리화 및 가독성 개선](./command/2026-02-06-1459-ceo-command-categorize-meetings.md)
 8. [[15:00:00] 일일 연대기 인덱스 링크 무결성 확보 및 가독성 개선](./command/2026-02-06-1500-ceo-command-link-fix.md)
 9. [[15:03:00] 전사 개발 계획 리뷰 및 검수 세션 소집](./command/2026-02-06-1503-ceo-command-dev-review-session.md)
+10. [[15:05:00] 5대 지능 단계 기록 프로토콜 수립](./command/2026-02-06-1505-ceo-command-5-steps-protocol.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
