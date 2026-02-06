@@ -8,8 +8,8 @@
 | 파일명 (File Name) | 목적 및 내용 (Purpose) | 상위 계보 (Parent) | 후속 산출물 (Next Step) |
 | :--- | :--- | :--- | :--- |
 | **SANCTUARY_DS.md** | 32종 팔레트 및 발광 폰트가 담긴 최종 디자인 시스템 | REQUIREMENTS.md | UX_SPEC_V1_7.md |
-| **UX_SPEC_V1_7.md** | 1px 단위의 화면 설계 및 시퀀스 플로우 명세 | SANCTUARY_DS.md | DEVELOPMENT_HANDOVER_V1_7.md |
-| **DEVELOPMENT_HANDOVER_V1_7.md** | 개발 지능을 위한 기술적 구현 가이드 (Tailwind 등) | UX_SPEC_V1_7.md | 소스 코드 |
+| **UX_SPEC_V1_7.md** | 1px 단위의 화면 설계 및 시퀀스 플로우 명세 | SANCTUARY_DS.md | development-handover-v1-7.md |
+| **development-handover-v1-7.md** | 개발 지능을 위한 기술적 구현 가이드 (Tailwind 등) | UX_SPEC_V1_7.md | dev/ (Implementation) |
 | **STRATEGIC_ALIGNMENT_V1_7.md** | PO-마케팅-UX의 비즈니스적 의도 합의 문서 | plan_mvp_v2.md | UX_SPEC_V1_7.md |
 | **COPY_LEDGER_V1_7.md** | 법적 검수를 마친 UI 카피라이팅 원부 | plan_mvp_v2.md | UX_SPEC_V1_7.md |
 
