@@ -1,21 +1,21 @@
 # 📗 플러터 클린 아키텍처 표준 가이드 (v1.0)
 
-## 1. 아키텍처 원칙: Separation of Concerns
-모든 코드는 아래의 3대 레이어로 엄격히 분리되어야 하며, 외부 라이브러리에 대한 의존성을 비즈니스 로직에서 제거한다.
+## 1. 아키텍처 원칙: Separation of Concerns & Dependency Rule
+모든 코드는 아래의 3대 레이어로 엄격히 분리되어야 하며, **의존성은 반드시 '내부(Domain)'를 향해야 한다.** 외부 레이어(Data/Presentation)는 내부 레이어(Domain)에 의존할 수 있으나, Domain은 외부 레이어의 존재를 알지 못해야 한다.
 
-### 1.1 Presentation Layer (`/presentation`)
+### 1.1 Presentation Layer (`/presentation`) -> [Depends on Domain]
 - **Widget (`component/*.dart`, `page/*.dart`)**: 순수 View. 비즈니스 로직 포함 금지.
-- **Bloc/Cubit (`bloc/*.dart`)**: UI 상태 관리 및 UseCase 호출.
+- **Bloc/Cubit (`bloc/*.dart`)**: UI 상태 관리 및 **UseCase 호출**. Repository를 직접 호출하지 않는다.
 
-### 1.2 Domain Layer (`/domain`) - PURE DART
-- **UseCase (`use_case/*.dart`)**: 단일 비즈니스 로직 단위 (Single Responsibility). UI 의존성 Zero.
-- **Entity (`model/*.dart`)**: 순수 비즈니스 데이터 구조.
-- **Repository Interface (`repository/*.dart`)**: 데이터 연산의 추상 정의.
+### 1.2 Domain Layer (`/domain`) - PURE DART [Independent]
+- **UseCase (`use_case/*.dart`)**: 단일 비즈니스 로직 단위. **Repository Interface에만 의존**하며 구현체는 알지 못한다.
+- **Entity (`model/*.dart`)**: 순수 비즈니스 데이터 구조. 의존성 Zero.
+- **Repository Interface (`repository/*.dart`)**: 데이터 연산의 추상 정의 (Abstract Class).
 
-### 1.3 Data Layer (`/data`)
-- **Repository Implementation (`repository/*_impl.dart`)**: 인터페이스 구현 및 DTO 매핑.
+### 1.3 Data Layer (`/data`) -> [Depends on Domain]
+- **Repository Implementation (`repository/*_impl.dart`)**: **Domain의 Interface를 구현**. DataSource를 사용하여 데이터를 가져오고 Entity로 매핑한다.
 - **DataSource (`data_source/*.dart`)**: 실제 데이터 페칭 (Firebase, API).
-- **DTO (`model/*.dart`)**: 통신용 데이터 객체.
+- **DTO (`model/*.dart`)**: 통신용 데이터 객체. 필요시 Entity로 변환 로직 포함.
 
 ## 2. 디렉토리 구조 (단수형 명명 강제)
 ```
