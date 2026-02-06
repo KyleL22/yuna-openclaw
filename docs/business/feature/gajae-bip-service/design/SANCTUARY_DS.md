@@ -1,38 +1,33 @@
-# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.9
+# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v1.0
 
 ## 1. Foundation & Palette
 - **Abyssal Grayscale (10-Step)**: `abyss-0` ~ `abyss-9`
-- **Intelligence Neon**: `intel-neon(#00F0FF)`, `alert-amber(#FFBF00)`
+- **Intelligence Neon**: `intel-neon(#00F0FF)`, `alert-amber(#FFBF00)`, `glitch-pink(#FF007A)`
 
-## 2. Reusable Component Library (New)
+## 2. Advanced Component Library
 
-### 🔘 Buttons
-| Style | State | Background | Border | Text | Effect |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Primary** | Idle | `intel-neon` | None | `abyss-0` | Glow 10px |
-| | Hover | `#50F5FF` | None | `abyss-0` | Glow 20px |
-| **Secondary**| Idle | `abyss-2` | `1px abyss-5`| `txt-main`| None |
-| | Hover | `abyss-3` | `1px abyss-6`| `txt-main`| None |
-| **Ghost** | Idle | Transparent | None | `txt-sub` | None |
-| | Hover | `abyss-2` | None | `txt-main` | None |
+### 🧠 Intelligence Thought Card (New)
+- **Container**: `abyss-1` Background, `1px abyss-5` Border.
+- **Typography**: `T-LOG` (JetBrains Mono / Glow effect).
+- **Features**: 
+    - **Auto-folding**: 10행 이상 시 자동 접힘 (Show more 버튼 활성화).
+    - **Header**: 발신 가재 ID 명시 및 우측 상단 **[Share]** 아이콘 배치.
 
-### 🪟 Dialog (Modal)
-- **Overlay**: `rgba(0,0,0,0.8)` + `backdrop-filter: blur(20px)`
-- **Container**: `abyss-2` (Background), `1px abyss-5` (Border)
-- **Typography**: 
-    - Title: `H-MD (24px/SemiBold)` / `intel-neon`
-    - Content: `B-MD (16px/Regular)` / `txt-main`
-- **Actions**: 하단 우측 정렬 (Secondary Button + Primary Button).
+### 📊 Step Progress Gauge (New)
+- **Base**: `abyss-5` 색상의 가느다란 수평 바 (Height: 4px).
+- **Fill**: `intel-neon` 색상의 1px 단위 그라데이션 충전.
+- **Label**: 우측 끝에 `%` 데이터 표시 (`CAPT` 스타일).
 
-### 📋 Bottom Sheet
-- **Max-height**: `80vh` 강제 적용.
-- **Drag Handle**: 상단 중앙 `40x4px`, `Rounded`, `abyss-5`.
-- **Overflow**: 내부 스크롤 필수, 하단 `abyss-2` 페이드 아웃 처리.
+### 🏷️ Agent Status Badge (New)
+| 상태 (Status) | 배경색 | 텍스트색 | 의미 |
+| :--- | :--- | :--- | :--- |
+| **ACTIVE** | `intel-neon` (20%) | `intel-neon` | 현재 연산 및 태스크 수행 중 |
+| **IDLE** | `abyss-5` | `txt-sub` | 대기 중 |
+| **HOLD** | `alert-amber` (20%) | `alert-amber`| 병목 발생 및 중단 |
 
 ## 3. High-Definition Texture
-- **Noise Grain**: 1% opacity 중첩.
-- **Scanline**: 2px 간격 가로 라인 배경.
-- **Double-Stroke**: 모든 카드에 `1px abyss-5` + `1px white(5%)` 적용.
+- **Scanline & Noise Grain**: 배경 레이어 중첩 (1% ~ 2% Opacity).
+- **Double-Stroke**: 카드 요소에 2중 경계선 적용.
 
 ---
-**UX가재 : 컴포넌트는 지능의 골격입니다. 정교한 부품이 무결한 시스템을 만듭니다.** ⚔️🚀
+**UX가재 : 부품이 모여 지능의 실체가 됩니다. v1.0 승격으로 본격적인 페이지 조립을 시작합니다.** ⚔️🚀
