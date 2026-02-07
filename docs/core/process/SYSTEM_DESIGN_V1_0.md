@@ -70,19 +70,27 @@ classDiagram
     }
 
     class LangGraphOrchestrator {
-        +StateGraph workflow
+        +StateGraph flow
         +run(command)
-        +route(status)
+        +transition(taskStatus)
+    }
+
+    class StateGraph {
+        +List nodes (Agents)
+        +List edges (Conditional Logic)
+        +State sharedMemory
     }
 
     %% Relationships & Reuse
     CEOCommand --> IntelligenceStatus : [Reuse]
     GajaeTask --> IntelligenceStatus : [Reuse]
     GajaeTask --> IntelligencePriority : [Standard]
-    GajaeTask "1" *-- "many" GajaeTask : Recursive Tree (공정=Root, 태스크=Child)
-    IntelligenceLog "1" -- "1" LogMetadata : Contains Link
-    LangGraphOrchestrator ..> GajaeTask : Manages Node
-    LangGraphOrchestrator ..> SanctuaryMCP : Accesses Rules
+    GajaeTask "1" *-- "many" GajaeTask : Recursive Tree
+    IntelligenceLog "1" -- "1" LogMetadata : Connectivity
+    LangGraphOrchestrator "1" -- "1" StateGraph : Defines Logic
+    StateGraph "1" -- "many" GajaeAgent : Assigns to Nodes
+    GajaeAgent --> GajaeTask : Executes/Updates
+    LangGraphOrchestrator ..> GajaeTask : Monitors State for Transition
 ```
 
 ---
