@@ -1,7 +1,7 @@
 # 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.0 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
-**[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **수행가재(Suhaeng Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
+**[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
 
 ---
 
@@ -17,15 +17,15 @@ graph TD
     PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
     
     subgraph "OpenClaw (LangGraph Host)"
-        Suhaeng["🦞 수행가재 (Main Interface)"]
-        %% Note: OpenClaw itself IS Suhaeng. There is no 'raw LLM'.
+        Biseo["🦞 비서가재 (Main Interface)"]
+        %% Note: OpenClaw itself IS Biseo. There is no 'raw LLM'.
         %% The System Prompt for the entry point is ROLE_SUHAENG.
         
         subgraph "Cognitive Layer"
             Think{판단과 기록}
         end
 
-        Suhaeng --> Think
+        Biseo --> Think
         Think -.->|"[AGENT_THOUGHT] Log"| DB
         
         Think -->|Intent: Casual| Reply["💬 Direct Reply"]
@@ -238,13 +238,13 @@ classDiagram
 3.  **Hydrate**: 각 LangGraph 노드(Node)에 해당 역할의 `persona`와 `responsibilities`를 주입하여 초기화합니다.
     *   *효과*: 코드를 수정하지 않고 DB의 `propmt` 텍스트만 수정해도 에이전트의 성격이 즉시 바뀝니다.
 
-### 3.2 수행가재 프로토콜 (The Suhaeng Protocol)
-**[Rule]**: 모든 메시지는 수행가재가 먼저 수신하고 **생각(Think)**해야 합니다. **생각**은 로그로 남습니다.
+### 3.2 비서가재 프로토콜 (The Biseo Protocol)
+**[Rule]**: 모든 메시지는 비서가재가 먼저 수신하고 **생각(Think)**해야 합니다. **생각**은 로그로 남습니다.
 
 ```mermaid
 sequenceDiagram
     actor CEO as "👤 낭만코딩 (CEO)"
-    participant ATT as "🦞 수행가재 (Gatekeeper)"
+    participant ATT as "🦞 비서가재 (Gatekeeper)"
     participant DB as "🔥 Firestore (Log)"
     participant LG as "⚙️ LangGraph"
 
@@ -329,7 +329,7 @@ stateDiagram-v2
     *   대화가 종료되거나 작업을 멈출 때, LangGraph는 현재 상태(State Snapshot)를 `checkpoint`로 저장합니다.
     *   이 `thread_id`는 Task 문서의 `swarm_id` 필드에 영구 저장됩니다.
 2.  **Wake Up (Resume)**:
-    *   CEO가 "로그인 기능 다시 작업해"라고 명령하면, 수행가재는 해당 Task의 `swarm_id`를 조회합니다.
+    *   CEO가 "로그인 기능 다시 작업해"라고 명령하면, 비서가재는 해당 Task의 `swarm_id`를 조회합니다.
     *   LangGraph는 `swarm_id`에 해당하는 **마지막 체크포인트**를 로드하여, 에이전트들의 단기 기억(Memory)을 복원합니다.
 
 ---
@@ -350,15 +350,15 @@ TARGET_REPO_PATH=/Users/kong/workspace/... # Default Workspace
 *   `read_file / write_file`: 파일 시스템 제어
 *   `run_command`: 쉘 명령어 실행
 *   `search_web`: 브라우저 제어 (검색)
-*   `send_telegram`: CEO에게 메시지 발송 (수행가재 전용)
+*   `send_telegram`: CEO에게 메시지 발송 (비서가재 전용)
 
 ### 4.3 개발 단계 (Development Steps)
 이 문서를 바탕으로 구현을 시작할 때 다음 순서를 따르십시오.
 
 1.  **Firestore Schema Initialization**:
     *   `scripts/init_roles.py`: `docs/core/role/*.md` 등 로컬 정책 파일을 파싱하여 Firestore `/system/roles` 컬렉션에 업로드하는 스크립트를 작성합니다. (Brain Injection)
-2.  **Suhaeng Brain**: `Attendant` 에이전트가 Firestore에서 자신의 역할을 읽어오도록 합니다.
-3.  **Telegram Hook**: 텔레그램 봇 API를 연동하여 `Suhaeng Brain`과 연결합니다.
+2.  **Biseo Brain**: `Attendant` 에이전트가 Firestore에서 자신의 역할을 읽어오도록 합니다.
+3.  **Telegram Hook**: 텔레그램 봇 API를 연동하여 `Biseo Brain`과 연결합니다.
 4.  **LangGraph Core**: 13단계 상태 머신(StateGraph)을 정의하고 각 노드에 에이전트를 매핑합니다.
 5.  **Chronicle Logger**: 모든 함수 호출(Tool Call)과 대화(Chat)를 가로채어 Firestore에 저장하는 미들웨어를 작성합니다.
 
