@@ -64,6 +64,8 @@ classDiagram
     GajaeTask --> IntelligenceStatus : [Reuse]
     GajaeTask --> IntelligencePriority : [Standard]
     GajaeTask "1" *-- "many" GajaeTask : Recursive Tree
+    LangGraphOrchestrator "1" -- "1" StateGraph : Controls Flow
+    StateGraph "1" -- "many" GajaeAgent : Maps to Nodes
     LangGraphOrchestrator ..> GajaeTask : Evaluates Dependencies
     GajaeAgent --> GajaeTask : Executes/Updates
     GajaeAgent "1" --> "1" SanctuaryMCP : Accesses Rules/Persona
