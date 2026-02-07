@@ -17,7 +17,9 @@ graph TD
     PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
     
     subgraph "OpenClaw (LangGraph Host)"
-        Suhaeng["🦞 수행가재 (Main Persona/Interface)"]
+        Suhaeng["🦞 수행가재 (Main Interface)"]
+        %% Note: OpenClaw itself IS Suhaeng. There is no 'raw LLM'.
+        %% The System Prompt for the entry point is ROLE_SUHAENG.
         
         subgraph "Cognitive Layer"
             Think{판단과 기록}
