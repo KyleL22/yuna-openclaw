@@ -33,7 +33,7 @@ graph TD
         
         Orchestrator -->|Assign Task| Squad["👥 Sanctuary Squad (10 Agents)"]
         
-        Squad -->|Execute| Tools["🛠️ File/Shell/Git"]
+        Squad -->|Execute| Tools["🛠️ OS Tools (Browser/Mail/Messenger)"]
         
         %% All agents write to DB
         Reply -.->|"[AGENT_RESPONSE]"| DB
@@ -44,6 +44,15 @@ graph TD
     
     DB -->|Realtime Stream| Dashboard["📊 Web Dashboard"]
 ```
+
+### 1.1 성역의 수호자들 (Sanctuary Squad - Domain Experts)
+**[Concept]**: 10명의 서브 에이전트(Squad)는 단순한 보조자가 아닙니다. 각자 **고유한 전문 도메인**, **페르소나(Persona)**, 그리고 **MCP(Model Context Protocol)**를 장착한 **최고 전문가(Subject Matter Experts)** 집단입니다.
+
+| 요소 (Component) | 설명 (Description) |
+| :--- | :--- |
+| **Domain Persona** | 각 에이전트는 해당 분야 전문가의 **태도와 관점**을 가집니다. <br>*(예: 보안(SEC) 에이전트는 편집증적일 정도로 안전을 검증하며, 디자인(UX) 에이전트는 사용성을 최우선으로 고집합니다.)* |
+| **Specialized MCP** | 각 에이전트는 자신의 도메인에 특화된 **지식(Context)**을 로드합니다. |
+| **Role** | CEO의 명령을 단순 수행하는 것을 넘어, **전문가로서의 통찰(Insight)**을 더해 최상의 결과를 도출합니다. |
 
 ---
 
@@ -73,6 +82,7 @@ classDiagram
     class GajaeTask {
         +String id (uuid)
         +String swarm_id (thread_id)
+        +String repository_path
         +String title
         +String description
         +ProductLifeCycle status
@@ -157,7 +167,8 @@ classDiagram
     "RFQ": "Fix bugs reported by QA"
   },
   "capabilities": [
-    "write_file", "search_web", "git_commit", "run_test"
+    "write_file", "search_web", "git_commit", "run_test",
+    "open_browser", "send_email", "use_messenger"
   ],
   "knowledge_base": [
     "docs/core/role/ROLE_DEV.md",
@@ -172,6 +183,7 @@ classDiagram
 {
   "id": "task_12345",
   "swarm_id": "thread_abc_001",
+  "repository_path": "/Users/kong/workspace/yuna-openclaw",
   "title": "Implement Login Feature",
   "description": "User authentication with JWT",
   "status": "FUE",
@@ -307,22 +319,8 @@ stateDiagram-v2
         FUT --> FL : Launch Success (CEO Final Approval)
         FUT --> FNL : Launch Fail
     }
+    }
 ```
-
----
-
-## 4. 구현 가이드 (Implementation Guide for OpenClaw)
-
-이 문서를 바탕으로 구현을 시작할 때 다음 순서를 따르십시오.
-
-1.  **Firestore Schema Initialization**:
-    *   `scripts/init_roles.py`: `docs/core/role/*.md` 등 로컬 정책 파일을 파싱하여 Firestore `/system/roles` 컬렉션에 업로드하는 스크립트를 작성합니다. (Brain Injection)
-2.  **Suhaeng Brain**: `Attendant` 에이전트가 Firestore에서 자신의 역할을 읽어오도록 합니다.
-3.  **Telegram Hook**: 텔레그램 봇 API를 연동하여 `Suhaeng Brain`과 연결합니다.
-4.  **LangGraph Core**: 13단계 상태 머신(StateGraph)을 정의하고 각 노드에 에이전트를 매핑합니다.
-5.  **Chronicle Logger**: 모든 함수 호출(Tool Call)과 대화(Chat)를 가로채어 Firestore에 저장하는 미들웨어를 작성합니다.
-
----
 
 ### 3.5 뇌 부활 프로토콜 (Context Resurrection)
 **[Rule]**: 에이전트는 잠들 수(Pause) 있지만, 죽지는 않습니다. `swarm_id`를 통해 **이전 기억을 완벽하게 복구(Resume)**해야 합니다.
@@ -333,7 +331,36 @@ stateDiagram-v2
 2.  **Wake Up (Resume)**:
     *   CEO가 "로그인 기능 다시 작업해"라고 명령하면, 수행가재는 해당 Task의 `swarm_id`를 조회합니다.
     *   LangGraph는 `swarm_id`에 해당하는 **마지막 체크포인트**를 로드하여, 에이전트들의 단기 기억(Memory)을 복원합니다.
-    *   *효과*: "아까 말씀하신 JWT 방식 말인데요..."라며 문맥을 이어서 대화할 수 있습니다.
+
+---
+
+## 4. 구현 가이드 (Implementation Guide for OpenClaw)
+
+### 4.1 환경 변수 설정 (Configuration)
+시스템 구동을 위해 다음 환경 변수가 필수적으로 설정되어야 합니다 (`.env`).
+```bash
+OPENAI_API_KEY=sk-...           # LLM Brain
+TELEGRAM_BOT_TOKEN=1234:ABC...  # CEO Interface
+FIRESTORE_CREDENTIALS=key.json  # Memory & Logs
+TARGET_REPO_PATH=/Users/kong/workspace/... # Default Workspace
+```
+
+### 4.2 핵심 도구 사용 가이드 (Built-in Tools Reference)
+다음 도구들은 **OpenClaw 런타임에서 기본 제공**하므로 별도의 구현이 필요하지 않습니다. 에이전트는 상황에 맞춰 이 도구들을 호출하여 사용합니다.
+*   `read_file / write_file`: 파일 시스템 제어
+*   `run_command`: 쉘 명령어 실행
+*   `search_web`: 브라우저 제어 (검색)
+*   `send_telegram`: CEO에게 메시지 발송 (수행가재 전용)
+
+### 4.3 개발 단계 (Development Steps)
+이 문서를 바탕으로 구현을 시작할 때 다음 순서를 따르십시오.
+
+1.  **Firestore Schema Initialization**:
+    *   `scripts/init_roles.py`: `docs/core/role/*.md` 등 로컬 정책 파일을 파싱하여 Firestore `/system/roles` 컬렉션에 업로드하는 스크립트를 작성합니다. (Brain Injection)
+2.  **Suhaeng Brain**: `Attendant` 에이전트가 Firestore에서 자신의 역할을 읽어오도록 합니다.
+3.  **Telegram Hook**: 텔레그램 봇 API를 연동하여 `Suhaeng Brain`과 연결합니다.
+4.  **LangGraph Core**: 13단계 상태 머신(StateGraph)을 정의하고 각 노드에 에이전트를 매핑합니다.
+5.  **Chronicle Logger**: 모든 함수 호출(Tool Call)과 대화(Chat)를 가로채어 Firestore에 저장하는 미들웨어를 작성합니다.
 
 ---
 
