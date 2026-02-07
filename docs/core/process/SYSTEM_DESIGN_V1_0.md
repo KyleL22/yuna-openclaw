@@ -17,7 +17,7 @@ graph TD
     PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
     
     subgraph "OpenClaw (LangGraph Host)"
-        Suhaeng["🦞 수행가재 (Gatekeeper)"]
+        Suhaeng["🦞 수행가재 (Main Persona/Interface)"]
         
         subgraph "Cognitive Layer"
             Think{판단과 기록}
@@ -26,7 +26,7 @@ graph TD
         Suhaeng --> Think
         Think -.->|"[AGENT_THOUGHT] Log"| DB
         
-        Think -->|Intent: Casual| SimpleLLM["💬 Chit-Chat"]
+        Think -->|Intent: Casual| Reply["💬 Direct Reply"]
         Think -->|Intent: Work| Orchestrator["⚙️ LangGraph Controller"]
         
         Orchestrator -->|Assign Task| Squad["👥 Sanctuary Squad (10 Agents)"]
@@ -34,7 +34,7 @@ graph TD
         Squad -->|Execute| Tools["🛠️ File/Shell/Git"]
         
         %% All agents write to DB
-        SimpleLLM -.->|"[CHAT_LOG]"| DB
+        Reply -.->|"[AGENT_RESPONSE]"| DB
         Squad -.->|"[AGENT_THOUGHT]"| DB
         Squad -.->|"[AGENT_DISCUSSION]"| DB
         Tools -.->|"[ACTION_RESULT]"| DB
@@ -235,6 +235,7 @@ sequenceDiagram
     participant LG as "⚙️ LangGraph"
 
     CEO->>ATT: "배포 진행시켜" (Message)
+    ATT->>DB: [CEO_COMMAND] "배포 진행시켜"
     
     rect rgb(200, 255, 200)
     note right of ATT: 🧠 Internal Monologue
@@ -242,7 +243,6 @@ sequenceDiagram
     ATT->>DB: [AGENT_THOUGHT] "명확한 배포 지시다."
     end
     
-    ATT->>DB: [CEO_COMMAND] "배포 진행시켜"
     ATT->>LG: Trigger Deployment Workflow
     ATT->>CEO: "네, 배포 프로세스를 가동합니다. 🚀" (Ack)
     ATT->>DB: [AGENT_RESPONSE] "네, 배포 프로세스를 가동합니다. 🚀"
@@ -275,6 +275,10 @@ sequenceDiagram
     
     Squad->>LG: Consensus Reached
     LG-->>DB: [SYSTEM_ALERT] State Transition Ready
+    
+    LG->>ATT: Final Report Ready
+    ATT->>CEO: "대표님, 요청하신 기획 검토가 완료되었습니다. (결과 요약)"
+    ATT->>DB: [AGENT_RESPONSE] (Result Report)
 ```
 
 ### 3.4 13단계 키네틱 프로토콜 (Kinetic 13 Protocol)
