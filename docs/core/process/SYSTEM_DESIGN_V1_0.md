@@ -113,6 +113,7 @@ classDiagram
         AGENT_DISCUSSION
         SYSTEM_ALERT
         ACTION_RESULT
+        AGENT_RESPONSE
     }
 
     class RoleType {
@@ -244,6 +245,7 @@ sequenceDiagram
     ATT->>DB: [CEO_COMMAND] "배포 진행시켜"
     ATT->>LG: Trigger Deployment Workflow
     ATT->>CEO: "네, 배포 프로세스를 가동합니다. 🚀" (Ack)
+    ATT->>DB: [AGENT_RESPONSE] "네, 배포 프로세스를 가동합니다. 🚀"
 ```
 
 ### 3.3 멀티 에이전트 오케스트레이션 (Swarm Orchestration)
