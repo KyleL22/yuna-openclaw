@@ -11,31 +11,31 @@
 
 ```mermaid
 graph TD
-    User[👤 CEO (Telegram)] -->|Message| Bridge[🌉 Telegram Bot API]
-    Bridge -->|Webhook| PC[🖥️ Sanctuary Engine (Mac)]
+    User["👤 CEO (Telegram)"] -->|Message| Bridge["🌉 Telegram Bot API"]
+    Bridge -->|Webhook| PC["🖥️ Sanctuary Engine (Mac)"]
     
-    PC -->|Fetch Persona & Rules| DB[(🔥 Firestore)]
+    PC -->|Fetch Persona & Rules| DB[("🔥 Firestore")]
     
     subgraph "Sanctuary Engine (LangGraph Host)"
-        Suhaeng[🦞 수행가재 (Gatekeeper)]
-        Loader[💉 Brain Loader (Dynamic Injection)]
+        Suhaeng["🦞 수행가재 (Gatekeeper)"]
+        Loader["💉 Brain Loader (Dynamic Injection)"]
         
         DB -->|/system/roles/{roleId}| Loader
         Loader -->|Hydrate Agent| Suhaeng
-        Loader -->|Hydrate Agent| Squad[👥 Sanctuary Squad (10 Agents)]
+        Loader -->|Hydrate Agent| Squad["👥 Sanctuary Squad (10 Agents)"]
         
         subgraph "Cognitive Processing"
             Suhaeng --> Think{판단과 기록}
-            Think -->|Intent: Work| Orchestrator[⚙️ LangGraph Controller]
+            Think -->|Intent: Work| Orchestrator["⚙️ LangGraph Controller"]
             Orchestrator -->|Assign| Squad
-            Squad -->|Execute| Tools[🛠️ File/Shell/Git]
+            Squad -->|Execute| Tools["🛠️ File/Shell/Git"]
         end
     end
     
     Suhaeng -->|Think Log| DB
     Squad -->|Discussion & Result| DB
     
-    DB -->|Visual| Dashboard[📊 Web Dashboard]
+    DB -->|Visual| Dashboard["📊 Web Dashboard"]
 ```
 
 ---
@@ -221,10 +221,10 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-    actor CEO as 👤 낭만코딩 (CEO)
-    participant ATT as 🦞 수행가재 (Thinking Gatekeeper)
-    participant DB as 🔥 Firestore
-    participant LG as ⚙️ LangGraph
+    actor CEO as "👤 낭만코딩 (CEO)"
+    participant ATT as "🦞 수행가재 (Thinking Gatekeeper)"
+    participant DB as "🔥 Firestore"
+    participant LG as "⚙️ LangGraph"
 
     CEO->>ATT: "배포 진행시켜" (Message)
     
