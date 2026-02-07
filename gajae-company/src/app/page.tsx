@@ -5,11 +5,14 @@ import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRig
 import Image from "next/image";
 
 /**
- * [가재 컴퍼니] The Ghibli Style Dashboard (v2.0)
- * 의도: 대표님의 지시에 따라 슬로건을 더 센스 있게 교체하고, Firestore 기반의 활동 중계 시스템을 최상단에 배치함.
+ * [가재 컴퍼니] The Ghibli Style Dashboard (v2.2)
+ * 의도: 대표님의 지시에 따라 '낭만코딩' 화자를 강조하고 밑줄 스타일을 적용함.
+ * 추가: 배포 확인을 위한 빌드 타임스탬프 하단 배치 및 캐시 방지용 v파라미터 링크 강화.
  */
 
 export default async function HomePage() {
+  const buildId = new Date().toISOString();
+
   return (
     <div className="container mx-auto px-6 py-12">
       {/* Decorative Elements */}
@@ -40,7 +43,7 @@ export default async function HomePage() {
         
         <div className="max-w-3xl mx-auto space-y-6">
             <p className="text-2xl lg:text-3xl text-slate-700 leading-tight font-black uppercase tracking-tighter">
-                낭만코딩 CEO와 AI 군단의 <br className="lg:hidden" />
+                <span className="text-ghibli-text underline decoration-ghibli-accent decoration-4 underline-offset-8">낭만코딩</span> CEO와 AI 군단의 <br className="lg:hidden" />
                 <span className="text-ghibli-accent">바이브 코딩(Vibe Coding)</span> 실황 중계
             </p>
             <p className="text-lg text-slate-400 font-medium italic">
@@ -110,8 +113,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Simple Link to Personnel */}
-      <div className="flex justify-center relative z-10 mb-20 border-t border-slate-100 pt-20">
+      {/* Personnel Link */}
+      <div className="flex flex-col items-center justify-center relative z-10 mb-20 border-t border-slate-100 pt-20">
         <Link href="/personnel" className="group flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-300 group-hover:border-ghibli-blue group-hover:text-ghibli-blue transition-all duration-500">
                 <Cpu size={32} />
@@ -120,6 +123,11 @@ export default async function HomePage() {
                 13인의 지능 노드 탐색 ➔
             </span>
         </Link>
+        
+        {/* Force Build Indicator for Cache Invalidation Check */}
+        <div className="mt-20 text-[8px] font-mono text-slate-300 uppercase tracking-widest">
+            Sanctuary Build ID: {buildId}
+        </div>
       </div>
     </div>
   );

@@ -73,7 +73,7 @@ classDiagram
 
 ## 2. 바이브 코딩 실황 시퀀스 (Sequence Diagram)
 
-대표님의 지시 한 마디가 어떻게 11마리 가재의 연산을 거쳐 성역에 박제되는지 그 '진짜 공정'의 흐름입니다.
+대표님의 지시 한 마디가 어떻게 11마리 가재의 연산을 거쳐 성역에 박제되는지 그 '진짜 공정'의 흐름입니다. v1.1에서는 **Topology Discussion** 단계가 강화되었습니다.
 
 ```mermaid
 sequenceDiagram
@@ -88,21 +88,22 @@ sequenceDiagram
     AT->>DB: 명령 세션 개설 및 원문 박제
     DB->>UI: [실시간] 명령 카드 노출
     
-    AT->>LG: 명령 분석 및 Topology 생성
-    LG->>DB: Swarm Steps (공정) 등록
-    DB->>UI: [실시간] 공정 그래프 시각화
+    Note over AT, Agent: [Swarm Session] Topology Discussion
+    AT->>Agent: 명령 공유 및 공정 설계 토론 요청
+    Agent-->>Agent: 도메인별 영향 분석 및 태스크 도출
+    Agent->>DB: 토론 발언 및 제안 태스크(Task ID) 박제
+    DB->>UI: [실시간] 토론 로그 및 계획된 태스크 노출
     
-    loop Swarm Intelligence Cycle
+    AT->>LG: 토론 결과 기반 Topology & Task Registry 확정
+    LG->>DB: Swarm Steps 및 연동 태스크 ID 최종 등록
+    DB->>UI: [실시간] 완성된 공정 그래프 시각화
+    
+    loop Swarm Intelligence Execution
         Agent->>DB: MCP 로드 (헌법/역할/태스크)
         Agent->>Agent: 지능 연산 (Fivefold Protocol)
-        Agent->>DB: 발언(Utterance) 및 아토믹 태스크 박제
-        DB->>UI: [실시간] 지능 카드 "타닥" 업데이트
+        Agent->>DB: 집행 발언 및 태스크 상태(DONE) 업데이트
+        DB->>UI: [실시간] 지능 카드 및 공정 진행도 업데이트
         Agent->>Agent: 공정 기준(Criteria) 검증
-        alt D.O.D 충족
-            Agent->>DB: Step Status -> DONE
-        else 보완 필요
-            Agent->>Agent: 피드백 루프 작동
-        end
     end
 
     AT->>CEO: 최종 집행 결과 보고
