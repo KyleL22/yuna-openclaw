@@ -90,6 +90,7 @@ classDiagram
     LangGraphOrchestrator "1" -- "1" StateGraph : Defines Logic
     StateGraph "1" -- "many" GajaeAgent : Assigns to Nodes
     GajaeAgent --> GajaeTask : Executes/Updates
+    GajaeAgent "1" --> "1" SanctuaryMCP : Accesses Rules/Persona
     LangGraphOrchestrator ..> GajaeTask : Monitors State for Transition
 ```
 
