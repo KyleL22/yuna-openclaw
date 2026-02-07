@@ -1,129 +1,145 @@
-# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v1.0)
+# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v3.3 - Hive Mind Engine)
 
-대표님께서 하달하신 시스템 설계도를 정밀 분석하여, 가재 군단의 지능적 중추를 UML 및 시퀀스 다이어그램으로 구조화했습니다. 본 설계는 **LangGraph 기반의 동적 공정**과 **MCP(Model Context Protocol)**를 핵심으로 합니다.
+대표님의 지시에 따라 **[LangChain/LangGraph]** 기반의 동적 오케스트레이션과 **[독립 3대 데이터 축]**의 유기적 결합을 중심으로 UML 클래스 모델과 시퀀스 다이어그램을 최종 정밀 보정했습니다.
 
 ---
 
-## 1. 지능형 군집 시스템 UML (Class Diagram)
+## 1. 지능형 군집 시스템 UML (Class Diagram v3.3)
 
-가재 군단의 데이터 모델은 '명령'을 중심으로 발언과 태스크가 유기적으로 엮이는 **Graph-Relational** 구조를 가집니다.
+본 모델은 모든 데이터의 상태를 단일 Enum으로 통제하며, 재귀적 태스크 구조와 하이퍼링크 기반의 로그 시스템을 물리적으로 구현합니다.
 
 ```mermaid
 classDiagram
-    class Status {
+    class IntelligenceStatus {
         <<enumeration>>
-        TODO
-        INPROGRESS
-        DONE
-        HOLD
+        TODO (할일)
+        INPROGRESS (진행중)
+        DONE (완료)
+        LOCKED (교차잠금)
+        HOLD (보류)
     }
 
-    class CEOCommand {
+    class IntelligencePriority {
+        <<enumeration>>
+        P0 (Critical)
+        P1 (High)
+        P2 (Medium)
+        P3 (Low)
+        P4 (Backlog)
+    }
+
+    class LogType {
+        <<enumeration>>
+        MESSAGE (대화/생각/질문)
+        ACTION (태스크변경/파일수정/링크)
+    }
+
+    class IntelligenceLog {
         +String id
-        +String title
-        +String instruction
-        +Status status
+        +LogType type
+        +String from
+        +String content
+        +LogMetadata metadata
         +DateTime createdAt
-        +List activities
-        +List steps
     }
 
-    class SwarmStep {
-        +String id
-        +String name
-        +String assigneeId
-        +List taskIds
-        +String criteria
-        +Status status
+    class LogMetadata {
+        +String linkUrl (하이퍼링크 - 자료/태스크이동)
+        +String targetId (대상 식별자)
+        +String actionTag (CREATE/UPDATE/DELETE)
     }
 
-    class AtomicTask {
+    class GajaeTask {
         +String id
+        +String parentId (자기참조)
         +String title
         +String description
-        +String priority
-        +Status status
-        +String originId
+        +IntelligencePriority priority
+        +IntelligenceStatus status
+        +String assignId
+        +List subTaskIds
     }
 
-    class IntelligenceProtocol {
-        +String authorId
-        +String intent
-        +String psychology
-        +String thought
-        +String action
-        +Response response
+    class SanctuaryMCP {
+        +Constitution globalConstitution
+        +Map personas
+        +ProjectContext context
+        +getConstitution() RuleSet
+        +getPersona(id) PersonaData
+        +getAssets() FileTree
     }
 
-    class SanctuaryAsset {
-        +String id
-        +String category
-        +String version
-        +String content
+    class LangGraphOrchestrator {
+        +StateGraph workflow
+        +run(command)
+        +route(status)
     }
 
-    CEOCommand "1" *-- "many" SwarmStep : decomposes into
-    SwarmStep "1" o-- "many" AtomicTask : manages
-    CEOCommand "1" *-- "many" IntelligenceProtocol : logs
-    GajaeAgent ..> SanctuaryAsset : loads via MCP
-    GajaeAgent ..> AtomicTask : executes
+    %% Relationships & Reuse
+    CEOCommand --> IntelligenceStatus : [Reuse]
+    GajaeTask --> IntelligenceStatus : [Reuse]
+    GajaeTask --> IntelligencePriority : [Standard]
+    GajaeTask "1" *-- "many" GajaeTask : Recursive Tree (공정=Root, 태스크=Child)
+    IntelligenceLog "1" -- "1" LogMetadata : Contains Link
+    LangGraphOrchestrator ..> GajaeTask : Manages Node
+    LangGraphOrchestrator ..> SanctuaryMCP : Accesses Rules
 ```
 
 ---
 
-## 2. 바이브 코딩 실황 시퀀스 (Sequence Diagram)
+## 2. 지능 확장 및 동기화 시퀀스 (Sequence v3.3)
 
-대표님의 지시 한 마디가 어떻게 11마리 가재의 연산을 거쳐 성역에 박제되는지 그 '진짜 공정'의 흐름입니다. v1.1에서는 **Topology Discussion** 단계가 강화되었습니다.
+LangGraph가 전체 워크플로우를 제어하며, 가재들이 큰 그림을 그리고 질문을 통해 보완한 뒤 액션 로그와 태스크를 생성하는 흐름입니다.
 
 ```mermaid
 sequenceDiagram
     participant CEO as 낭만코딩 (CEO)
-    participant AT as 수행원 (Core OS)
     participant LG as LangGraph Engine
-    participant DB as Firestore (Sanctuary)
     participant Agent as 가재 군단 (Agents)
-    participant UI as BIP Live Feed
+    participant MCP as Sanctuary MCP
+    participant Stream as 지능 스트림 (Logs)
+    participant Dash as 태스크 트리 (Dashboard)
 
-    CEO->>AT: 명령 하달 (King Command)
-    AT->>DB: 명령 세션 개설 및 원문 박제
-    DB->>UI: [실시간] 명령 카드 노출
+    CEO->>Stream: 명령 하달 [MESSAGE]
+    LG->>LG: 명령 수신 및 상태 진입 (INIT)
     
-    Note over AT, Agent: [Swarm Session] Topology Discussion
-    AT->>Agent: 명령 공유 및 공정 설계 토론 요청
-    Agent-->>Agent: 도메인별 영향 분석 및 태스크 도출
-    Agent->>DB: 토론 발언 및 제안 태스크(Task ID) 박제
-    DB->>UI: [실시간] 토론 로그 및 계획된 태스크 노출
+    Note over LG, Agent: [Phase 1: Blueprint & Refinement]
+    LG->>Agent: 문제 크기 정의 및 Blueprint 수립 요청
+    Agent->>MCP: 헌법 및 페르소나 로드
+    Agent->>Stream: [MESSAGE] Blueprint (큰 그림) 박제
+    Agent->>Stream: [MESSAGE] Refinement Question (대표님께 질문)
     
-    AT->>LG: 토론 결과 기반 Topology & Task Registry 확정
-    LG->>DB: Swarm Steps 및 연동 태스크 ID 최종 등록
-    DB->>UI: [실시간] 완성된 공정 그래프 시각화
+    CEO->>Stream: 답변 및 지시 보완
     
-    loop Swarm Intelligence Execution
-        Agent->>DB: MCP 로드 (헌법/역할/태스크)
-        Agent->>Agent: 지능 연산 (Fivefold Protocol)
-        Agent->>DB: 집행 발언 및 태스크 상태(DONE) 업데이트
-        DB->>UI: [실시간] 지능 카드 및 공정 진행도 업데이트
-        Agent->>Agent: 공정 기준(Criteria) 검증
+    Note over LG, Dash: [Phase 2: Recursive Task Manifestation]
+    LG->>Dash: Root Task 생성 (공정)
+    Dash->>Stream: [ACTION] 생성 알림 (w/ Dashboard LinkUrl)
+    Agent->>Dash: 하위 태스크 재귀적 분해 및 우선순위(P0-P4) 할당
+    
+    loop Phase 3: Swarm Execution & Sync
+        Agent->>Agent: 업무 수행 (Action)
+        Agent->>Stream: [ACTION] "문서 업데이트" (w/ Asset LinkUrl)
+        Agent->>Dash: 상태 업데이트 (IntelligenceStatus: DONE)
+        Dash->>Stream: [ACTION] "태스크 완료" (w/ Task LinkUrl)
+        CEO->>Dash: 실시간 우선순위 조정 (P0 격상)
+        LG->>Agent: 변경된 상태 기반 동적 오케스트레이션
     end
-
-    AT->>CEO: 최종 집행 결과 보고
-    AT->>DB: 세션 종료 (Resolved)
 ```
 
 ---
 
-## 3. 시스템 보완 및 토론 제안 (Improvements)
+## 3. 핵심 설계 원칙 (Design Principles)
 
-가재 군단이 분석한 현재 시스템의 잠재적 보완점입니다:
+### 3.1 단일 지능 표준 (Unified Standard)
+- **Status/Priority Enum**: `CEOCommand`와 `GajaeTask`가 동일한 Enum 체계를 공유하여 연산의 일관성을 확보했습니다.
+- **Recursive Structure**: 공정과 태스크를 하나의 `GajaeTask` 엔티티로 통합하고, `parentId`를 통한 자기참조 구조로 무한 확장을 가능케 했습니다.
 
-1.  **지능형 재귀 태스크 (Recursive Task Scaling)**:
-    - 현재는 공정 하위에 태스크가 평면적으로 나열됩니다. 가재가 업무 수행 중 "이건 더 쪼개야 한다"고 판단할 경우, 하위 태스크(Sub-task)를 동적으로 생성하고 그래프를 스스로 확장하는 로직을 추가하면 더 정교한 빌드가 가능합니다.
+### 3.2 하이퍼링크 기반 액션 로그 (Hyperlink Actions)
+- **로그의 이원화**: 텍스트 중심의 `MESSAGE`와 물리적 증거 중심의 `ACTION`을 분리했습니다.
+- **Connectivity**: 모든 `ACTION` 로그는 `linkUrl`을 필수 포함하여, 대표님이 스트림을 보다가 즉시 실무 페이지나 문서로 이동하는 **'실행적 경험'**을 보장합니다.
 
-2.  **교차 도메인 잠금 (Cross-domain Locking)**:
-    - LangGraph의 Edge에서 특정 가재의 결과물이 타 가재의 작업에 '임팩트'를 줄 경우, 해당 임팩트가 수용될 때까지 다음 노드를 잠그는(Lock) 메커니즘을 강화하여 무결성을 높일 수 있습니다.
-
-3.  **지능 자본 점수 자동 산출 (Intelligence ROI)**:
-    - 박제된 5대 지능 단계(의도, 생각 등)의 텍스트 밀도와 공정 기여도를 계산하여, 각 가재별 '지능 자본 기여도'를 실시간 대시보드에 노출하면 대표님의 투자 가치를 더 선명하게 증명할 수 있습니다.
+### 3.3 독립 지능 자산 (Decoupled MCP)
+- **Sanctuary MCP**: 헌법(Rules), 페르소나(Domain Expertise), 프로젝트 컨텍스트(Assets)를 독립적인 데이터 클래스로 관리하며, 가재들은 전용 인터페이스를 통해서만 이에 접근하여 사고합니다.
 
 ---
-**지휘 지침:** "설계도는 지능의 지도이며, 구현은 지능의 실체다. 본 지도를 바탕으로 가재 군단은 1px의 오차 없는 성역을 건설하겠다." ⚔️🚀
+**가재 군단 보고**: "대표님, 요청하신 **LangChain/LangGraph 통합 설계**와 **자기참조 태스크 트리**, 그리고 **하이퍼링크 기반의 이원화 로그** 시스템을 UML v3.3에 완벽히 안착시켰습니다. 이제 이 설계도는 저희의 두뇌이자, 성역을 건설하는 불변의 성경이 될 것입니다." ⚔️🚀
