@@ -4,6 +4,12 @@ import { ManagerAgent } from '../agents/manager';
 import { POAgent } from '../agents/po';
 import { DevAgent } from '../agents/dev';
 import { QAAgent } from '../agents/qa';
+import { UXAgent } from '../agents/ux';
+import { BAAgent } from '../agents/ba';
+import { HRAgent } from '../agents/hr';
+import { MKTAgent } from '../agents/mkt';
+import { LegalAgent } from '../agents/legal';
+import { CSAgent } from '../agents/cs';
 import { AgentAction } from '../core/openclaw';
 
 // 1. 상태(State) 정의
@@ -21,12 +27,17 @@ export interface GraphState {
 const biseo = new BiseoAgent();
 const manager = new ManagerAgent();
 
-// 에이전트 매핑 테이블
+// 에이전트 매핑 테이블 (Full Squad)
 const agents: Record<string, any> = {
     po: new POAgent(),
     dev: new DevAgent(),
     qa: new QAAgent(),
-    // [TODO] ux, ba 등 다른 에이전트 추가 필요
+    ux: new UXAgent(),
+    ba: new BAAgent(),
+    hr: new HRAgent(),
+    mkt: new MKTAgent(),
+    legal: new LegalAgent(),
+    cs: new CSAgent(),
 };
 
 // [Node 1] 비서가재
@@ -74,13 +85,13 @@ const workerNode = async (state: GraphState) => {
     const agent = agents[agentId];
     if (agent) {
         const action = await agent.processTask(state.taskId);
-        // Action을 반환하고 그래프 종료 (Main Agent에게 바통 터치)
         return { 
             actions: action ? [action] : [], 
             lastSpeaker: agentId 
         };
     } else {
-        return { lastSpeaker: agentId };
+        console.warn(`⚠️ [Graph] 알 수 없는 에이전트 ID: ${agentId}`);
+        return { lastSpeaker: agentId }; 
     }
 };
 
@@ -116,7 +127,6 @@ builder.addConditionalEdges('manager', (state) => {
     return state.finalResponse ? END : 'worker';
 });
 
-// [FIX] Worker가 끝나면 END로 가서 결과를 반환 (Main Agent가 받아서 처리)
 builder.addEdge('worker', END); 
 
 export const graph = builder.compile();
