@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { db } from './firebase';
 import { SystemRole } from '../types/system_role.interface';
 
@@ -22,12 +23,7 @@ export class BrainLoader {
     // ID 추출: ROLE_DEV -> dev
     const id = filename.replace('ROLE_', '').toLowerCase();
     
-    // 단순 파싱 로직 (실제로는 마크다운 파서나 정규식으로 더 정교하게 할 수 있음)
-    // 여기서는 파일 내용 전체를 persona.tone에 넣는 식으로 간소화하거나
-    // 특정 섹션을 파싱한다고 가정.
-    // 일단 전체 텍스트를 'description'으로 저장하고, 추후 고도화.
-    
-    // 한글 이름 매핑 (하드코딩 or 파일 내 메타데이터 파싱)
+    // 한글 이름 매핑
     const nameMap: Record<string, string> = {
       'biseo': '비서가재',
       'pm': '매니저가재',
@@ -39,18 +35,19 @@ export class BrainLoader {
       'hr': '인사가재',
       'marketing': '마케팅가재',
       'legal': '변호사가재',
-      'cs': '민원가재'
+      'cs': '민원가재',
+      'attendant': '비서가재' // attendant -> biseo로 매핑 (파일이 아직 ROLE_ATTENDANT.md라면)
     };
 
     return {
       id,
       name: nameMap[id] || id.toUpperCase(),
       persona: {
-        tone: 'Professional & Efficient', // 파일 내용에서 추출 필요
+        tone: 'Professional & Efficient', 
         core_values: []
       },
       responsibilities: {
-        'ALL': content // 전체 내용을 통으로 넣음 (가장 확실한 컨텍스트)
+        'ALL': content // 전체 내용을 통으로 넣음
       }
     };
   }
@@ -80,9 +77,11 @@ export class BrainLoader {
   }
 }
 
-// 직접 실행용 (CLI)
-if (require.main === module) {
-  // 워크스페이스 루트 추정 (gajae-os의 상위 폴더)
+// 직접 실행용 (CLI) - ESM Compatible
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  // gajae-os/src/core -> gajae-os/src -> gajae-os -> yuna-openclaw
   const workspaceRoot = path.resolve(__dirname, '../../..');
+  
   new BrainLoader(workspaceRoot).syncRoles().catch(console.error);
 }

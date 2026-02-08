@@ -1,11 +1,17 @@
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin'; // * as admin 대신 default import 시도
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// .env 로드 (프로젝트 루트의 .env를 바라봄)
-dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+// .env 로드
+const envPath = path.resolve(process.cwd(), '../.env');
+dotenv.config({ path: envPath });
 
-// Mock DB (DB 연결 실패 시 사용)
+console.log('🔍 [Firebase] Loading .env from:', envPath);
+console.log('🔍 [Firebase] Project ID:', process.env.FIREBASE_PROJECT_ID || 'UNDEFINED');
+console.log('🔍 [Firebase] Client Email:', process.env.FIREBASE_CLIENT_EMAIL || 'UNDEFINED');
+console.log('🔍 [Firebase] Private Key Exists:', !!process.env.FIREBASE_PRIVATE_KEY);
+
+// Mock DB
 const mockDb = {
   collection: (name: string) => ({
     doc: (id: string) => ({
@@ -20,12 +26,14 @@ const mockDb = {
 let dbInstance: any = mockDb;
 
 try {
-  if (!admin.apps.length) {
+  // admin.apps 체크 로직 개선
+  const apps = admin.apps || []; 
+
+  if (!apps.length) {
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-    // 실제 키가 있을 때만 초기화 시도
     if (projectId && clientEmail && privateKey) {
         admin.initializeApp({
             credential: admin.credential.cert({
@@ -37,15 +45,16 @@ try {
         dbInstance = admin.firestore();
         console.log('🔥 Firebase initialized successfully (Real DB).');
     } else {
-        console.log('⚠️ (Mock Mode) Firebase 키가 없어 Mock DB를 사용합니다.');
+        console.log('⚠️ (Mock Mode) Firebase 키 누락. (ProjectID, Email, Key 중 하나 이상 없음)');
     }
   } else {
-      // 이미 초기화된 경우 (HMR 등)
+      // 이미 초기화됨
       dbInstance = admin.firestore();
+      console.log('🔥 Firebase already initialized.');
   }
 } catch (error) {
-  console.log('⚠️ (Mock Mode) Firebase 초기화 실패, Mock DB를 사용합니다.');
-  console.error(error);
+  console.log('⚠️ (Mock Mode) Firebase 초기화 중 에러 발생:', error);
+  // console.error(error); // 필요시 주석 해제
 }
 
 export const db = dbInstance;
