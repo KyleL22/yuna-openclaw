@@ -1,10 +1,11 @@
 import { db } from '../core/firebase';
 import { Task } from '../types/task.interface';
+import { SystemRole } from '../types/system_role.interface';
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
  * Base Agent (모든 가재의 부모 클래스)
- * - 기능: 공통 DB 조회, 컨텍스트 로딩
+ * - 기능: 공통 DB 조회, 컨텍스트 로딩, 뇌 로딩(Brain Loading)
  */
 export class BaseAgent {
   protected openclaw = new OpenClawClient();
@@ -50,7 +51,18 @@ export class BaseAgent {
     }).reverse(); // 시간순 정렬
   }
 
-  // 4. 컨텍스트 조립 (프롬프트용)
+  // 4. Brain Loading (DB에서 Role 정보 로드)
+  protected async loadSystemRole(roleId: string): Promise<SystemRole | null> {
+      // BrainLoader가 업로드한 경로: /system/roles/items/{roleId}
+      const doc = await db.collection('system').doc('roles').collection('items').doc(roleId).get();
+      if (doc.exists) {
+          return doc.data() as SystemRole;
+      }
+      console.warn(`⚠️ [Brain] Role not found in DB: ${roleId}`);
+      return null;
+  }
+
+  // 5. 컨텍스트 조립 (프롬프트용)
   protected async buildContext(taskId: string): Promise<string> {
     const task = await this.loadTask(taskId);
     if (!task) return 'Task not found';
