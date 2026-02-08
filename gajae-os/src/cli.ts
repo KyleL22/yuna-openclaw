@@ -1,29 +1,34 @@
 import * as dotenv from 'dotenv';
 import { graph } from './graph/workflow';
 import * as path from 'path';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-// .env 로드 (루트)
 dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 /**
  * Gajae OS CLI Entry Point
- * - Usage: npx tsx src/cli.ts "명령어"
- * - Output: JSON String (stdout)
+ * - Usage: npx tsx src/cli.ts "<command>" [--taskId <id>] [--answer <text>]
  */
 async function main() {
-  const command = process.argv[2];
+  const argv = yargs(hideBin(process.argv))
+    .option('taskId', { type: 'string' })
+    .option('answer', { type: 'string' })
+    .parseSync();
 
-  if (!command) {
-    console.error('Usage: npx tsx src/cli.ts "<command>"');
-    process.exit(1);
-  }
+  const command = argv._[0] as string;
 
-  // 로그는 stderr로 출력 (stdout은 순수 JSON을 위해 비워둠)
+  // 로그는 stderr로 출력
   const originalLog = console.log;
   console.log = console.error; 
 
   try {
-    const input = { messages: [command] };
+    const input: any = { 
+        messages: command ? [command] : [],
+        taskId: argv.taskId,
+        llmAnswer: argv.answer // [New] LLM 답변 주입
+    };
+
     const result = await graph.invoke(input);
 
     // 결과만 stdout으로 출력
