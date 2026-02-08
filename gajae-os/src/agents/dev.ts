@@ -1,5 +1,5 @@
 import { db } from '../core/firebase';
-import { BaseAgent } from './base';
+import { BaseAgent } from './base_agent';
 import { AgentAction } from '../core/openclaw';
 import { Task } from '../types/task.interface';
 
