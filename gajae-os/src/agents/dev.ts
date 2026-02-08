@@ -1,52 +1,27 @@
-import { BaseAgent } from './base_agent';
-import { AgentAction } from '../core/openclaw';
 import { db } from '../core/firebase';
-import { TaskStatus } from '../types/task_status.enum';
+import { BaseAgent } from './base';
+import { AgentAction } from '../core/openclaw';
+import { Task } from '../types/task.interface';
 
-/**
- * 개발가재 (Dev Gajae)
- * - Brain Loading 적용 완료
- */
 export class DevAgent extends BaseAgent {
-  
   constructor() {
-    super('dev');
+    super();
   }
 
-  async processTask(taskId: string): Promise<AgentAction | null> {
+  async processTask(taskId: string, action: any): Promise<AgentAction> {
     console.log(`💡 [개발가재(OS)] Task(ID:${taskId}) 처리 준비...`);
+    
+    // [Fix] 단순 상태 업데이트만 수행 (실제 로직은 BaseAgent의 Prompt로 위임)
+    // Firestore status 필드 유효성 체크
+    const docRef = db.collection('tasks').doc(taskId);
+    const doc = await docRef.get();
+    const task = doc.data() as Task;
 
-    const contextString = await this.buildContext(taskId);
-    const roleData = await this.loadSystemRole(this.agentId);
-    const task = await this.loadTask(taskId);
-
-    if (!task) return null;
-
-    if (task.status !== TaskStatus.FUE) {
-        await db.collection('tasks').doc(taskId).update({
-            status: TaskStatus.FUE,
-            updated_at: new Date().toISOString()
-        });
+    if (task && task.status) {
+        // 상태 업데이트가 필요하다면 여기서 수행 (지금은 Manager가 다 하므로 Pass)
+        // await docRef.update({ updated_at: new Date().toISOString() });
     }
 
-    const systemPrompt = roleData?.responsibilities['ALL'] || `너는 개발가재(DEV)다. 코드를 구현하라.`;
-
-    const agentTask = `
-      ${systemPrompt}
-
-      [Current Goal] 기획서(Artifact)를 바탕으로 실제 기능을 구현하라.
-      
-      ${contextString}
-
-      [Output Instructions] 
-        1. 실제 코드 작성 (또는 작성 시뮬레이션).
-        2. Firestore Artifact에 '구현 코드(Link)' 등록.
-        3. 작업 완료 후 'DONE' 보고.
-    `;
-
-    const action = this.openclaw.spawnAgent(this.agentId, agentTask, { taskId });
-
-    console.log(`💡 [개발가재(OS)] Dev Agent Spawn 요청 생성 완료 (Brain Loaded).`);
-    return action;
+    return await this.loadContextAndSpawn('dev', taskId, action.task);
   }
 }
