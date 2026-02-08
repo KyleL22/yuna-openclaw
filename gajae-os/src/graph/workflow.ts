@@ -12,7 +12,7 @@ export interface GraphState {
   intent?: 'WORK' | 'CASUAL';
   taskId?: string;
   lastSpeaker?: string;
-  nextSpeaker?: string; // [Fix] 필드 추가
+  nextSpeaker?: string;
   actions?: AgentAction[];
   finalResponse?: string;
 }
@@ -52,7 +52,6 @@ const prepareNode = async (state: GraphState) => {
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
-    // lastSpeaker는 이전 턴의 workerNode에서 갱신됨
     const action = await manager.processTask(state.taskId, state.lastSpeaker);
     
     if (!action) {
@@ -61,36 +60,27 @@ const managerNode = async (state: GraphState) => {
 
     console.log(`👔 [Graph] 매니저 결정: ${action.agentId} 호출`);
     
-    // nextSpeaker 설정 -> workerNode가 이걸 보고 실행함
     return { actions: [action], nextSpeaker: action.agentId }; 
 };
 
 // [Node 5] 워커 실행 (Unified Worker Node)
 const workerNode = async (state: GraphState) => {
-    // managerNode가 설정한 nextSpeaker를 가져옴
     const agentId = state.nextSpeaker; 
     
-    if (!agentId) {
-        console.warn(`⚠️ [Graph] Worker Node 진입했으나 실행할 에이전트 ID가 없습니다.`);
-        return {};
-    }
+    if (!agentId) return {};
 
-    console.log(`👷 [Graph] Worker Node 진입: ${agentId} 실행`);
+    console.log(`👷 [Graph] Worker Node 진입: ${agentId} 실행 요청 생성`);
 
     const agent = agents[agentId];
     if (agent) {
-        // Agent Logic 실행
         const action = await agent.processTask(state.taskId);
-        
-        // 실행 완료 후, 해당 에이전트를 'lastSpeaker'로 설정하여 매니저에게 보고
-        // (actions에 추가하는 건 선택사항, 이미 manager가 추가했으면 중복일 수 있음)
+        // Action을 반환하고 그래프 종료 (Main Agent에게 바통 터치)
         return { 
-            // actions: action ? [action] : [], // 중복 방지를 위해 생략 가능하나, 에이전트 내부 로직상 필요하다면 유지
+            actions: action ? [action] : [], 
             lastSpeaker: agentId 
         };
     } else {
-        console.warn(`⚠️ [Graph] 알 수 없는 에이전트 ID: ${agentId}`);
-        return { lastSpeaker: agentId }; // 에러 방지용 넘김
+        return { lastSpeaker: agentId };
     }
 };
 
@@ -101,7 +91,7 @@ const builder = new StateGraph<GraphState>({
     intent: { reducer: (a, b) => b ?? a, default: () => undefined },
     taskId: { reducer: (a, b) => b ?? a, default: () => undefined },
     lastSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
-    nextSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined }, // [Fix] Reducer 추가
+    nextSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
     actions: { reducer: (a, b) => (a ?? []).concat(b ?? []), default: () => [] },
     finalResponse: { reducer: (a, b) => b ?? a, default: () => undefined },
   }
@@ -126,6 +116,7 @@ builder.addConditionalEdges('manager', (state) => {
     return state.finalResponse ? END : 'worker';
 });
 
-builder.addEdge('worker', 'manager');
+// [FIX] Worker가 끝나면 END로 가서 결과를 반환 (Main Agent가 받아서 처리)
+builder.addEdge('worker', END); 
 
 export const graph = builder.compile();
