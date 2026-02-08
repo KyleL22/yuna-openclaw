@@ -20,6 +20,7 @@ export interface GraphState {
   lastSpeaker?: string;
   nextSpeaker?: string;
   actions?: AgentAction[];
+  llmAnswer?: string; // [New] LLM 판단 결과 주입
   finalResponse?: string;
 }
 
@@ -41,53 +42,56 @@ const agents: Record<string, any> = {
 
 // [Node 1] 비서가재
 const biseoNode = async (state: GraphState) => {
+  // taskId가 있으면 이미 처리된 명령이거나 승인 건이므로 패스
   if (state.taskId && state.intent) {
       return {}; 
   }
 
   const lastMessage = state.messages[state.messages.length - 1];
-  console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
   
-  if (lastMessage.includes('진행해') || lastMessage.includes('승인')) {
-      return { intent: 'CEO_APPROVE' };
+  // [Fix] processMessage에 llmAnswer 전달
+  const result = await biseo.processMessage(lastMessage, state.llmAnswer);
+
+  // 결과가 Action(ASK_LLM)이면 바로 리턴
+  if (result?.action) {
+      return { actions: [result.action] };
   }
 
-  const keywords = ['개발', '만들어', '설계', '진행', '에픽', '생성', '수정', '추가', '개선'];
-  const isWork = keywords.some(keyword => lastMessage.includes(keyword));
-  
-  return { intent: isWork ? 'WORK' : 'CASUAL' };
+  // 의도 파악 완료되었으면
+  if (result?.intent) {
+      return { intent: result.intent as any, taskId: result.taskId };
+  }
+
+  return {};
 };
 
 // [Node 2] 잡담
 const chitchatNode = async (state: GraphState) => ({ finalResponse: "재밌네요! 🦞" });
 
-// [Node 3] 업무 준비 (INBOX 생성)
+// [Node 3] 업무 준비 (INBOX 생성) - biseoNode 안에서 처리되므로 사실상 필요 없음/단순화 가능
 const prepareNode = async (state: GraphState) => {
-  if (state.taskId) {
-      console.log(`👔 [Graph] 기존 Task(ID:${state.taskId}) 이어서 진행`);
-      return {};
-  }
-
-  console.log(`👔 [Graph] 업무 모드 진입`);
-  const lastMessage = state.messages[state.messages.length - 1];
-  
-  // [Fix] createTask -> processMessage
-  const result = await biseo.processMessage(lastMessage); 
-  return { taskId: result?.taskId };
+  // 이미 biseoNode에서 처리됨 (taskId 생성됨)
+  return {};
 };
 
 // [Node 4] 매니저가재
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
-    const action = await manager.processTask(state.taskId, state.lastSpeaker, state.intent);
+    // [Fix] llmAnswer 전달
+    const action = await manager.processTask(state.taskId, state.lastSpeaker, state.intent, state.llmAnswer);
     
     if (!action) {
         return { finalResponse: "대기 중이거나 처리가 완료되었습니다." }; 
     }
 
+    // ASK_LLM 액션이면 actions에 담고 리턴 (다음 노드 실행 X)
+    if (action.type === 'ASK_LLM') {
+        return { actions: [action] };
+    }
+
+    // SPAWN_AGENT 액션이면 nextSpeaker 설정
     console.log(`👔 [Graph] 매니저 결정: ${action.agentId} 호출`);
-    
     return { actions: [action], nextSpeaker: action.agentId }; 
 };
 
@@ -97,8 +101,6 @@ const workerNode = async (state: GraphState) => {
     
     if (!agentId) return {};
 
-    console.log(`👷 [Graph] Worker Node 진입: ${agentId} 실행 요청 생성`);
-
     const agent = agents[agentId];
     if (agent) {
         const action = await agent.processTask(state.taskId);
@@ -107,7 +109,6 @@ const workerNode = async (state: GraphState) => {
             lastSpeaker: agentId 
         };
     } else {
-        console.warn(`⚠️ [Graph] 알 수 없는 에이전트 ID: ${agentId}`);
         return { lastSpeaker: agentId }; 
     }
 };
@@ -120,28 +121,37 @@ const builder = new StateGraph<GraphState>({
     taskId: { reducer: (a, b) => b ?? a, default: () => undefined },
     lastSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
     nextSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
-    actions: { reducer: (a, b) => (a ?? []).concat(b ?? []), default: () => [] },
+    actions: { reducer: (a, b) => (a ?? []).concat(b ?? []), default: () => [] }, // Action은 계속 쌓이지 않고 덮어써도 됨 (사실상) - 일단 concat 유지
+    llmAnswer: { reducer: (a, b) => b ?? a, default: () => undefined }, // [New]
     finalResponse: { reducer: (a, b) => b ?? a, default: () => undefined },
   }
 });
 
 builder.addNode('biseo', biseoNode);
 builder.addNode('chitchat', chitchatNode);
-builder.addNode('prepare', prepareNode);
+builder.addNode('prepare', prepareNode); // (Legacy, but kept for structure)
 builder.addNode('manager', managerNode);
 builder.addNode('worker', workerNode);
 
 builder.setEntryPoint('biseo');
 
 builder.addConditionalEdges('biseo', (state) => {
-  if (state.intent === 'CEO_APPROVE') return 'prepare'; 
-  return state.intent === 'WORK' ? 'prepare' : 'chitchat';
+    // ASK_LLM 액션이 있으면 END로 가서 Main Agent에게 질문 전달
+    const lastAction = state.actions?.[state.actions.length - 1];
+    if (lastAction?.type === 'ASK_LLM') return END;
+
+    if (state.intent === 'CEO_APPROVE') return 'prepare';
+    return state.intent === 'WORK' ? 'prepare' : 'chitchat';
 });
 
 builder.addEdge('chitchat', END);
 builder.addEdge('prepare', 'manager');
 
 builder.addConditionalEdges('manager', (state) => {
+    // ASK_LLM 액션이 있으면 END
+    const lastAction = state.actions?.[state.actions.length - 1];
+    if (lastAction?.type === 'ASK_LLM') return END;
+
     return state.finalResponse ? END : 'worker';
 });
 
