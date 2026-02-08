@@ -15,7 +15,7 @@ import { AgentAction } from '../core/openclaw';
 // 1. 상태(State) 정의
 export interface GraphState {
   messages: string[];
-  intent?: 'WORK' | 'CASUAL' | 'CEO_APPROVE'; // [Mod] 승인 인텐트 추가
+  intent?: 'WORK' | 'CASUAL' | 'CEO_APPROVE'; 
   taskId?: string;
   lastSpeaker?: string;
   nextSpeaker?: string;
@@ -41,7 +41,6 @@ const agents: Record<string, any> = {
 
 // [Node 1] 비서가재
 const biseoNode = async (state: GraphState) => {
-  // 이미 taskId가 있고, intent가 명시적으로 들어왔다면(테스트 코드 등) 패스
   if (state.taskId && state.intent) {
       return {}; 
   }
@@ -49,7 +48,6 @@ const biseoNode = async (state: GraphState) => {
   const lastMessage = state.messages[state.messages.length - 1];
   console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
   
-  // [Fix] 승인 키워드 추가 (임시)
   if (lastMessage.includes('진행해') || lastMessage.includes('승인')) {
       return { intent: 'CEO_APPROVE' };
   }
@@ -65,7 +63,6 @@ const chitchatNode = async (state: GraphState) => ({ finalResponse: "재밌네�
 
 // [Node 3] 업무 준비 (INBOX 생성)
 const prepareNode = async (state: GraphState) => {
-  // [Fix] 이미 taskId가 있으면 생성 스킵 (승인 시나리오)
   if (state.taskId) {
       console.log(`👔 [Graph] 기존 Task(ID:${state.taskId}) 이어서 진행`);
       return {};
@@ -73,15 +70,16 @@ const prepareNode = async (state: GraphState) => {
 
   console.log(`👔 [Graph] 업무 모드 진입`);
   const lastMessage = state.messages[state.messages.length - 1];
-  const taskId = await biseo.createTask(lastMessage); 
-  return { taskId };
+  
+  // [Fix] createTask -> processMessage
+  const result = await biseo.processMessage(lastMessage); 
+  return { taskId: result?.taskId };
 };
 
 // [Node 4] 매니저가재
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
-    // [Fix] intent 전달
     const action = await manager.processTask(state.taskId, state.lastSpeaker, state.intent);
     
     if (!action) {
@@ -136,7 +134,7 @@ builder.addNode('worker', workerNode);
 builder.setEntryPoint('biseo');
 
 builder.addConditionalEdges('biseo', (state) => {
-  if (state.intent === 'CEO_APPROVE') return 'prepare'; // 승인도 업무의 연장
+  if (state.intent === 'CEO_APPROVE') return 'prepare'; 
   return state.intent === 'WORK' ? 'prepare' : 'chitchat';
 });
 
