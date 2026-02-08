@@ -1,12 +1,13 @@
 import { db } from '../core/firebase';
 import { Task, TaskStatus } from '../types/task.interface';
+import { RoleReport } from '../types/role_report.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
 /**
  * 기획가재 (PO Gajae)
  * - 역할: Product Owner
- * - 기능: PF 단계 Task 처리 -> 기획서 생성 -> RFE_RFK 상태 변경
+ * - 기능: PF 단계 Task 처리 -> 기획서 생성 -> RFE_RFK 상태 변경 -> Report 저장
  */
 export class POAgent {
   
@@ -17,36 +18,44 @@ export class POAgent {
     const doc = await docRef.get();
     const task = doc.data() as Task;
 
-    // 1. 기획서(1pager) 내용 생성 (Mock LLM)
+    // 1. 기획서 생성 (Mock)
     const onePagerContent = `# 1-Pager: ${task.title}\n\n## 1. 개요\n${task.instruction}\n\n## 2. 요구사항\n- 기능 구현\n- 테스트 완료\n\n## 3. 일정\n- ASAP`;
     
-    // 2. 파일 저장 (docs/epics/E001/1-plan/1pager.md)
-    // [주의] Epic ID가 있어야 폴더를 만드는데, 지금은 하드코딩된 'E001-default' 사용.
-    const epicId = task.epic_id || 'UNKNOWN-EPIC';
+    // 2. 파일 저장
+    const epicId = task.epic_id || 'E001-default';
     const filePath = `docs/epics/${epicId}/1-plan/1pager.md`;
     this.saveFile(filePath, onePagerContent);
 
-    // 3. Artifact 등록 (DB)
+    // 3. Artifact 등록
     await db.collection('epics').doc(epicId).set({
         artifacts: [{ path: filePath, type: '1pager', created_at: new Date().toISOString() }]
     }, { merge: true });
 
-    // 4. 상태 변경: PF -> RFE_RFK (개발 착수 승인 대기)
+    // 4. 상태 변경: PF -> RFE_RFK
     await docRef.update({
       status: TaskStatus.RFE_RFK,
       updated_at: new Date().toISOString()
     });
 
-    console.log(`💡 [기획가재] 기획서 작성 완료: ${filePath}`);
-    console.log(`   -> [상태 변경] PF -> RFE_RFK (승인 대기)`);
+    // 5. Role Report 저장 (핵심 추가!!)
+    const report: RoleReport = {
+        role_id: 'po',
+        task_id: taskId,
+        summary: `기획서(${filePath}) 작성 완료. 주요 내용: ${task.instruction}`,
+        status: 'DONE',
+        logs: [] // 나중에 실제 로그 ID 연결
+    };
+    await docRef.collection('reports').doc('po').set(report);
+
+    console.log(`💡 [기획가재] 기획서 작성 및 Report 저장 완료.`);
     
-    // 5. Chronicle 기록
+    // 6. Chronicle 기록
     await this.logChronicle('po', 'AGENT_RESPONSE', `기획서(${filePath}) 작성 완료했습니다. 개발 착수 승인 부탁드립니다.`);
   }
 
   // 파일 저장 헬퍼
   private saveFile(relativePath: string, content: string) {
-    const fullPath = path.resolve(process.cwd(), '../', relativePath); // gajae-os 상위가 루트
+    const fullPath = path.resolve(process.cwd(), '../', relativePath);
     const dir = path.dirname(fullPath);
     
     if (!fs.existsSync(dir)) {
