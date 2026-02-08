@@ -38,7 +38,7 @@ async function purgeAll() {
     'tasks',
     'chronicles',
     'epics',
-    'projects' // 만약 만들었다면
+    'projects' 
   ];
 
   for (const col of collectionsToDelete) {
