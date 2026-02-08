@@ -15,7 +15,7 @@ import { AgentAction } from '../core/openclaw';
 // 1. 상태(State) 정의
 export interface GraphState {
   messages: string[];
-  intent?: 'WORK' | 'CASUAL';
+  intent?: 'WORK' | 'CASUAL' | 'CEO_APPROVE'; // [Mod] 승인 인텐트 추가
   taskId?: string;
   lastSpeaker?: string;
   nextSpeaker?: string;
@@ -27,7 +27,6 @@ export interface GraphState {
 const biseo = new BiseoAgent();
 const manager = new ManagerAgent();
 
-// 에이전트 매핑 테이블 (Full Squad)
 const agents: Record<string, any> = {
     po: new POAgent(),
     dev: new DevAgent(),
@@ -42,10 +41,19 @@ const agents: Record<string, any> = {
 
 // [Node 1] 비서가재
 const biseoNode = async (state: GraphState) => {
+  // 이미 taskId가 있고, intent가 명시적으로 들어왔다면(테스트 코드 등) 패스
+  if (state.taskId && state.intent) {
+      return {}; 
+  }
+
   const lastMessage = state.messages[state.messages.length - 1];
   console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
   
-  // [Fix] 키워드 추가 (진행, 에픽, 생성, 수정 등)
+  // [Fix] 승인 키워드 추가 (임시)
+  if (lastMessage.includes('진행해') || lastMessage.includes('승인')) {
+      return { intent: 'CEO_APPROVE' };
+  }
+
   const keywords = ['개발', '만들어', '설계', '진행', '에픽', '생성', '수정', '추가', '개선'];
   const isWork = keywords.some(keyword => lastMessage.includes(keyword));
   
@@ -57,20 +65,27 @@ const chitchatNode = async (state: GraphState) => ({ finalResponse: "재밌네�
 
 // [Node 3] 업무 준비 (INBOX 생성)
 const prepareNode = async (state: GraphState) => {
+  // [Fix] 이미 taskId가 있으면 생성 스킵 (승인 시나리오)
+  if (state.taskId) {
+      console.log(`👔 [Graph] 기존 Task(ID:${state.taskId}) 이어서 진행`);
+      return {};
+  }
+
   console.log(`👔 [Graph] 업무 모드 진입`);
   const lastMessage = state.messages[state.messages.length - 1];
   const taskId = await biseo.createTask(lastMessage); 
   return { taskId };
 };
 
-// [Node 4] 매니저가재 (Central Hub)
+// [Node 4] 매니저가재
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
-    const action = await manager.processTask(state.taskId, state.lastSpeaker);
+    // [Fix] intent 전달
+    const action = await manager.processTask(state.taskId, state.lastSpeaker, state.intent);
     
     if (!action) {
-        return { finalResponse: "모든 공정 처리가 완료되었습니다." }; 
+        return { finalResponse: "대기 중이거나 처리가 완료되었습니다." }; 
     }
 
     console.log(`👔 [Graph] 매니저 결정: ${action.agentId} 호출`);
@@ -78,7 +93,7 @@ const managerNode = async (state: GraphState) => {
     return { actions: [action], nextSpeaker: action.agentId }; 
 };
 
-// [Node 5] 워커 실행 (Unified Worker Node)
+// [Node 5] 워커 실행
 const workerNode = async (state: GraphState) => {
     const agentId = state.nextSpeaker; 
     
@@ -121,6 +136,7 @@ builder.addNode('worker', workerNode);
 builder.setEntryPoint('biseo');
 
 builder.addConditionalEdges('biseo', (state) => {
+  if (state.intent === 'CEO_APPROVE') return 'prepare'; // 승인도 업무의 연장
   return state.intent === 'WORK' ? 'prepare' : 'chitchat';
 });
 
