@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.7 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.8 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
@@ -13,49 +13,41 @@
 ```mermaid
 graph TD
     User["👤 CEO (Telegram)"] -->|Message| Bridge["🌉 Telegram Bot API"]
-    Bridge -->|Webhook| PC["🖥️ OpenClaw Gateway"]
+    Bridge -->|Webhook| Main["🖥️ 비서가재 (Main Agent)"]
     
-    PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
-    
-    subgraph "OpenClaw Runtime"
-        Gateway["⛩️ Gateway Service"]
-        
-        subgraph "Engine"
-            OS["⚙️ gajae-os (LangGraph Engine)"]
-        end
-        
-        subgraph "Workers (Micro-Agents)"
-            Biseo["🦞 Biseo (biseo)"]
-            PM["👔 Manager (pm)"]
-            PO["💡 PO (po)"]
-            DEV["💻 Dev (dev)"]
-            ETC["... (others)"]
-        end
-
-        Gateway -- "Trigger" --> Biseo
-        Biseo -- "Call API" --> OS
-        OS -- "Spawn Request" --> Gateway
-        Gateway -- "Spawn" --> PM
-        Gateway -- "Spawn" --> PO
-        Gateway -- "Spawn" --> DEV
-        
-        %% All agents write to DB
-        Biseo -.->|"[CEO_COMMAND]"| DB
-        OS -.->|"[PROCESS_STATE]"| DB
-        PM -.->|"[DECISION]"| DB
-        PO -.->|"[PLAN]"| DB
-        DEV -.->|"[CODE]"| DB
+    subgraph "Local Workspace"
+        OS["⚙️ gajae-os (CLI)"]
+        DB[("🔥 Firestore (Memory)")]
     end
     
-    DB -->|Realtime Stream| Dashboard["📊 Web Dashboard"]
+    subgraph "Workers (Micro-Agents)"
+        PM["👔 Manager"]
+        PO["💡 PO"]
+        DEV["💻 Dev"]
+        QA["🧪 QA"]
+    end
+
+    Main -->|Exec CLI| OS
+    OS -->|Read/Write| DB
+    OS -- "Return Action" --> Main
+    Main -- "Spawn" --> PM
+    Main -- "Spawn" --> PO
+    Main -- "Spawn" --> DEV
+    
+    %% All agents write to DB
+    Main -.->|"[CEO_COMMAND]"| DB
+    OS -.->|"[PROCESS_STATE]"| DB
+    PM -.->|"[DECISION]"| DB
+    PO -.->|"[PLAN]"| DB
+    DEV -.->|"[CODE]"| DB
 ```
 
 ### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Micro-Agents)
-**[Concept]**: 12명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. `gajae-os`는 이들을 직접 실행하는 게 아니라, **Gateway API를 통해 호출(Spawn)**합니다.
+**[Concept]**: 12명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. `gajae-os`는 이들을 직접 실행하는 게 아니라, **`Action Plan`을 반환하여 Main Agent가 실행하게** 합니다.
 
 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
-| `biseo` | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신 (1차 진입점) |
+| `main` (biseo) | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신, `gajae-os` 구동 |
 | `pm` | **매니저가재** | 공정 관리 (Manager) | 스케줄링 및 공정 통제 |
 | `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성 |
 | `ba` | **분석가재** | 분석 (Business Analyst) | 요구사항 분석 |
@@ -195,11 +187,10 @@ classDiagram
 3.  **계획 (Scheduling):** 매니저가재(PM)가 분류된 Task의 우선순위를 보고 `BACKLOG` -> `PF(착수)`로 상태 변경.
 4.  **긴급 대응:** CEO가 "긴급!" 선언 시, 비서가재가 즉시 `URGENT Epic` 생성 후 매니저가재 호출 -> 강제 인터럽트 발동.
 
-### 3.2 Direct Spawn via Gateway (Orchestration)
-*   **Engine (`gajae-os`):** 상태 머신(LangGraph)만 관리. 실제 작업은 수행하지 않음.
-*   **Spawn:** 상태가 `PF`가 되면, `gajae-os`가 OpenClaw Gateway API를 호출하여 **`po` 에이전트**를 Spawn.
-*   **Worker (`po`):** 깨어나서 Firestore의 Task 정보를 읽고, 기획서를 작성하고, `RoleReport`를 남기고 종료.
-*   **Loop:** `gajae-os`는 Worker의 종료(`DONE`)를 감지하고 다음 단계로 전이.
+### 3.2 Action Planner Pattern (Orchestration)
+*   **Engine (`gajae-os` CLI):** 상태 머신(LangGraph)을 돌리고 **`AgentAction` (JSON)**을 반환.
+*   **Main Agent (`biseo`):** CLI의 출력을 파싱하여 **`openclaw.spawn(agentId)`**를 실제로 실행.
+*   **Context Injection:** 깨울 때 해당 에이전트의 `RoleReport` (과거 요약)와 `Current Task Info`를 주입하여 실행.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
 
@@ -269,6 +260,13 @@ docs/
 │   │   └── 3-dev/ (api.md)
 ├── core/role/              # 가재별 역할 정의 (ROLE_DEV.md)
 └── gajae-os/               # 시스템 코드 (TS - Orchestrator)
+    ├── src/
+    │   ├── agents/         # 에이전트 로직 (PO, PM, DEV...)
+    │   ├── core/           # Firebase, OpenClawClient
+    │   ├── graph/          # LangGraph Workflow
+    │   └── types/          # TS Interfaces
+    ├── .env                # (루트 참조)
+    └── cli.ts              # CLI Entry Point
 ```
 
 ### 4.2 기술 스택
