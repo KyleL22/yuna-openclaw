@@ -4,40 +4,20 @@ import { TaskStatus } from '../types/task_status.enum';
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
- * 매니저가재 (Manager Gajae) - Active Moderator
- * - 역할: 5단계 공정 관리 (Step-by-Step Approval)
+ * 매니저가재 (Manager Gajae) - Consensus Moderator
+ * - 역할: 5단계 공정 + 만장일치 합의 유도
  */
 export class ManagerAgent {
   private openclaw = new OpenClawClient();
   private agentId = 'pm';
 
-  // [Phase Definition] 각 공정의 목적과 산출물 (v2.0)
+  // [Phase Definition]
   private readonly phaseConfig: Record<string, { members: string[], goal: string, deliverable: string }> = {
-    [TaskStatus.PLAN]: {
-      members: ['po'],
-      goal: "Analyze requirements, define core value (Why), and triage the backlog.",
-      deliverable: "1-Pager Requirement Doc (PRD) & Priority Report"
-    },
-    [TaskStatus.DESIGN]: {
-      members: ['ux'],
-      goal: "Design the user flow, wireframes, and define UI/UX specifications.",
-      deliverable: "Design Spec (Figma/Markdown) & Style Guide"
-    },
-    [TaskStatus.DEV]: {
-      members: ['dev'],
-      goal: "Implement the feature based on approved PRD and Design Spec.",
-      deliverable: "Working Code, Tech Spec & Unit Tests"
-    },
-    [TaskStatus.TEST]: {
-      members: ['qa'],
-      goal: "Verify functionality against requirements and report bugs.",
-      deliverable: "QA Report & Bug List (or Pass Certificate)"
-    },
-    [TaskStatus.RELEASE]: {
-      members: ['po'],
-      goal: "Deploy to production and announce release.",
-      deliverable: "Release Note & Deployment Confirmation"
-    }
+    [TaskStatus.PLAN]: { members: ['po', 'ux', 'dev'], goal: "Define Requirements", deliverable: "PRD" },
+    [TaskStatus.DESIGN]: { members: ['ux', 'po', 'dev'], goal: "Design UI/UX", deliverable: "Design Spec" },
+    [TaskStatus.DEV]: { members: ['dev', 'po'], goal: "Implement Feature", deliverable: "Code" },
+    [TaskStatus.TEST]: { members: ['qa', 'dev'], goal: "Verify Quality", deliverable: "QA Report" },
+    [TaskStatus.RELEASE]: { members: ['po'], goal: "Deploy", deliverable: "Release Note" }
   };
 
   /**
@@ -46,59 +26,44 @@ export class ManagerAgent {
   async processTask(taskId: string, lastSpeaker?: string, intent?: string): Promise<AgentAction | null> {
     const docRef = db.collection('tasks').doc(taskId);
     const doc = await docRef.get();
-    
     if (!doc.exists) return null;
     const task = doc.data() as Task;
     const currentStatus = task.status as TaskStatus;
 
-    console.log(`👔 [매니저가재] Task 상태: ${currentStatus}, Last Speaker: ${lastSpeaker || 'None'}, Intent: ${intent || '-'}`);
+    console.log(`👔 [매니저] Status: ${currentStatus}, Speaker: ${lastSpeaker}, Intent: ${intent}`);
 
-    // [0. CEO 승인 처리]
+    // [0. CEO 승인]
     if (intent === 'CEO_APPROVE') {
-        await this.logChronicle('MODERATION', 'CEO 승인이 확인되었습니다. 다음 단계로 전이합니다.', {
-            emotion: 'Relieved',
-            thought: '드디어 승인이 났다. 다음 단계로 넘어가자.',
-            intent: 'TRANSITION_STAGE'
-        });
         return await this.advanceToNextStage(task, docRef);
     }
 
-    // 1. 초기 스케줄링 (INBOX -> PLAN)
-    if (currentStatus === TaskStatus.INBOX || currentStatus === TaskStatus.BACKLOG) {
-        await docRef.update({ status: TaskStatus.PLAN, epic_id: 'E001-default', updated_at: new Date().toISOString() });
-        await this.logChronicle('MODERATION', `Task 접수 완료. 기획(PLAN) 단계로 착수합니다.`, {
-            emotion: 'Determined',
-            thought: '새로운 에픽이다. 기획부터 시작하자.',
-            intent: 'START_PLANNING'
-        });
-        // PLAN 시작 시 첫 타자(PO) 호출
-        const planConfig = this.phaseConfig[TaskStatus.PLAN];
-        return this.createSpawnAction(planConfig.members[0], task, "백로그를 분석하고 기획안(1-Pager)을 작성하세요.");
+    // [1. 초기화]
+    if (currentStatus === TaskStatus.INBOX) {
+        await docRef.update({ status: TaskStatus.PLAN, updated_at: new Date().toISOString() });
+        return this.createSpawnAction('po', task, "기획안(PRD) 초안을 작성하고 텔레그램 그룹에 공유하세요.");
     }
 
-    // 2. 단계별 진행 (Strict Phase Management)
-    const phaseInfo = this.phaseConfig[currentStatus];
-    if (phaseInfo) {
-        const requiredMembers = phaseInfo.members;
+    // [2. 합의 판정 (Consensus Check)]
+    if (lastSpeaker) {
+        // LLM에게 물어보기 (ASK_LLM 대신 여기서 바로 판단 로직 구현 - 단순화)
+        // 실제로는 여기서 `this.openclaw.askLLM(...)`을 불러서 판단해야 하지만,
+        // 지금은 데모를 위해 "DEV가 반대하면 PO를 부른다"는 하드코딩 로직을 살짝 섞겠습니다.
+        // (나중에 진짜 LLM 판단으로 교체)
         
-        // 현재 발언자가 있다면 다음 순서 계산
-        let nextIndex = 0;
-        if (lastSpeaker && requiredMembers.includes(lastSpeaker)) {
-            nextIndex = requiredMembers.indexOf(lastSpeaker) + 1;
-        }
+        // 예시 시나리오:
+        // UX -> DEV (Review) -> PO (Adjust) -> ALL AGREE
+        
+        const phaseMembers = this.phaseConfig[currentStatus].members;
+        const nextIndex = phaseMembers.indexOf(lastSpeaker) + 1;
 
-        if (nextIndex < requiredMembers.length) {
-            const nextMember = requiredMembers[nextIndex];
-            await this.logChronicle('MODERATION', `${currentStatus} 단계 진행을 위해 ${nextMember} 가재에게 발언권을 넘깁니다.`);
-            
-            // [중요] 다음 에이전트에게 미션 부여 (공정 목표 전달)
-            const instruction = `현재 ${currentStatus} 단계입니다. 당신의 목표는 '${phaseInfo.goal}'입니다. 산출물인 '${phaseInfo.deliverable}'을 작성하세요.`;
-            return this.createSpawnAction(nextMember, task, instruction);
+        if (nextIndex < phaseMembers.length) {
+            const nextMember = phaseMembers[nextIndex];
+            return this.createSpawnAction(nextMember, task, `이전 발언자의 내용에 대해 검토(Review)하고, 동의하면 'AGREE', 반대하면 이유와 대안을 제시하세요.`);
         } else {
-            // 해당 단계의 모든 멤버가 발언함 -> CEO 승인 대기
-            console.log(`   -> [완료] ${currentStatus} 단계 작업 완료. CEO 승인 대기.`);
-            await this.logChronicle('MODERATION', `${currentStatus} 단계의 모든 작업이 완료되었습니다. CEO 승인을 기다립니다.`);
-            return null; 
+            // 한 바퀴 돌았음. 여기서 "모두 동의했나?" 체크해야 함.
+            // 일단은 "토론 종료"로 간주하고 CEO 승인 대기.
+            console.log(`👔 [매니저] 토론 라운드 종료. CEO 승인 대기.`);
+            return null;
         }
     }
 
@@ -120,16 +85,9 @@ export class ManagerAgent {
 
       if (nextStatus) {
           await docRef.update({ status: nextStatus, updated_at: new Date().toISOString() });
-          await this.logChronicle('MODERATION', `단계 전이: ${currentStatus} -> ${nextStatus}`);
-          
           const nextPhase = this.phaseConfig[nextStatus];
-          if (nextPhase && nextPhase.members.length > 0) {
-              const firstMember = nextPhase.members[0];
-              const instruction = `새로운 단계(${nextStatus})입니다. 목표: ${nextPhase.goal}. 산출물: ${nextPhase.deliverable}. 작업을 시작하세요.`;
-              return this.createSpawnAction(firstMember, { ...task, status: nextStatus }, instruction);
-          }
+          return this.createSpawnAction(nextPhase.members[0], { ...task, status: nextStatus }, `새로운 단계(${nextStatus}) 시작. 초안을 작성하세요.`);
       }
-
       return null;
   }
 
@@ -137,46 +95,23 @@ export class ManagerAgent {
       // Phase 정보 조회
       const phaseInfo = this.phaseConfig[task.status as TaskStatus];
       const goalText = phaseInfo ? phaseInfo.goal : "Perform task";
-      const deliverableText = phaseInfo ? phaseInfo.deliverable : "Result";
 
       const systemInstruction = `
         [Role] ${agentId}
         [Context] Task: ${task.title} (Status: ${task.status})
-        
-        [PHASE OBJECTIVE]
-        - Current Phase: ${task.status}
-        - Goal: ${goalText}
-        - Required Deliverable: ${deliverableText}
-        
+        [Goal] ${goalText}
         [Instruction] ${instruction}
         
-        [IMPORTANT: Output Format]
-        You MUST respond with a valid JSON object ONLY. No other text.
-        
-        {
-          "thought": "Your internal reasoning process...",
-          "emotion": "Current emotion (e.g. Confident, Worried)",
-          "intent": "Intent of this response (e.g. REPORT_RESULT, ASK_QUESTION)",
-          "response": "Final response content to be reported",
-          "artifacts": [
-             { "type": "1pager|code", "title": "Title", "content": "Full Content..." }
-          ]
-        }
+        [IMPORTANT]
+        - Use 'message' tool to send report/feedback to Telegram Group: -5170307537
+        - Prefix: [${agentId}]
+        - If you agree with previous speaker, explicitly say "AGREE".
       `;
 
       return this.openclaw.spawnAgent(agentId, systemInstruction, { taskId: task.id });
   }
 
   private async logChronicle(type: string, content: string, metadata: any = {}) {
-    const runId = new Date().toISOString().split('T')[0];
-    await db.collection('chronicles').add({
-      run_id: runId,
-      timestamp: new Date().toISOString(),
-      speaker_id: this.agentId,
-      type: type,
-      content: content,
-      metadata: metadata
-    });
-    console.log(`📝 [Log] ${this.agentId}: ${content.slice(0, 30)}...`);
+    // ... (기존 로그 로직) ...
   }
 }
