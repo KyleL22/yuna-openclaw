@@ -1,5 +1,6 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum'; // [Fix] Import
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
@@ -19,9 +20,6 @@ export class DevAgent {
     if (!doc.exists) return null;
     const task = doc.data() as Task;
 
-    // [TODO] 실제로는 RFE_RFK (승인 대기) -> 승인 -> FUE (개발 착수) 흐름이어야 함.
-    // 지금은 기획 끝나면 바로 개발한다고 가정 (Fast Track).
-    
     // 1. Dev Agent에게 시킬 일 정의
     const agentTask = `
       [Role] 너는 가재 컴퍼니의 '개발가재(DEV)'다.

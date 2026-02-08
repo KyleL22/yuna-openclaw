@@ -1,5 +1,6 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum'; // [Fix] Import
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
