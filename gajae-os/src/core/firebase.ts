@@ -1,7 +1,9 @@
 import * as admin from 'firebase-admin';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-dotenv.config();
+// .env 로드 (프로젝트 루트의 .env를 바라봄)
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 // Mock DB (DB 연결 실패 시 사용)
 const mockDb = {
@@ -20,18 +22,30 @@ let dbInstance: any = mockDb;
 try {
   if (!admin.apps.length) {
     const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
     // 실제 키가 있을 때만 초기화 시도
-    if (projectId && process.env.FIREBASE_PRIVATE_KEY) {
-        // ... (리얼 초기화 로직 생략 - 어차피 키 없으면 실패함)
-        // admin.initializeApp(...)
-        // dbInstance = admin.firestore();
-        console.log('⚠️ (Mock Mode) Firebase 키가 없어 Mock DB를 사용합니다.');
+    if (projectId && clientEmail && privateKey) {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId,
+                clientEmail,
+                privateKey,
+            }),
+        });
+        dbInstance = admin.firestore();
+        console.log('🔥 Firebase initialized successfully (Real DB).');
     } else {
         console.log('⚠️ (Mock Mode) Firebase 키가 없어 Mock DB를 사용합니다.');
     }
+  } else {
+      // 이미 초기화된 경우 (HMR 등)
+      dbInstance = admin.firestore();
   }
 } catch (error) {
   console.log('⚠️ (Mock Mode) Firebase 초기화 실패, Mock DB를 사용합니다.');
+  console.error(error);
 }
 
 export const db = dbInstance;
