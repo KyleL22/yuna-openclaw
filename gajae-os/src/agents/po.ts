@@ -1,5 +1,6 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum'; // [Fix] Import 분리
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
@@ -25,7 +26,6 @@ export class POAgent {
     }
 
     // 1. PO Agent에게 시킬 일(Instruction) 정의
-    // (여기서 실제 기획가재에게 줄 프롬프트를 만듭니다)
     const agentTask = `
       [Role] 너는 가재 컴퍼니의 '기획가재(PO)'다.
       [Goal] 다음 요구사항을 바탕으로 '1-Pager 기획서'를 작성하라.
@@ -38,11 +38,6 @@ export class POAgent {
 
     // 2. Spawn Action 생성 (직접 파일 안 만듦!)
     const action = this.openclaw.spawnAgent('po', agentTask, { taskId });
-
-    // [상태 업데이트는 언제?]
-    // PO Agent가 일을 끝내고 돌아오면 그때 업데이트해야 함.
-    // 하지만 지금은 '지시'만 내리는 단계이므로, 'PROCESSING' 등으로 바꿀 수도 있음.
-    // 일단은 Action만 리턴.
 
     console.log(`💡 [기획가재(OS)] PO Agent Spawn 요청 생성 완료.`);
     return action;
