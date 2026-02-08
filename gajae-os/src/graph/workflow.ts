@@ -1,6 +1,9 @@
 import { StateGraph, END } from '@langchain/langgraph';
 import { BiseoAgent } from '../agents/biseo';
 import { ManagerAgent } from '../agents/manager';
+import { POAgent } from '../agents/po';
+import { DevAgent } from '../agents/dev';
+import { QAAgent } from '../agents/qa';
 import { AgentAction } from '../core/openclaw';
 
 // 1. 상태(State) 정의
@@ -8,7 +11,7 @@ export interface GraphState {
   messages: string[];
   intent?: 'WORK' | 'CASUAL';
   taskId?: string;
-  lastSpeaker?: string; // [New] 마지막 발언자 (토론 루프용)
+  lastSpeaker?: string;
   actions?: AgentAction[];
   finalResponse?: string;
 }
@@ -17,7 +20,15 @@ export interface GraphState {
 const biseo = new BiseoAgent();
 const manager = new ManagerAgent();
 
-// [Node 1] 비서가재: 의도 파악
+// 에이전트 매핑 테이블
+const agents: Record<string, any> = {
+    po: new POAgent(),
+    dev: new DevAgent(),
+    qa: new QAAgent(),
+    // [TODO] ux, ba 등 다른 에이전트 추가 필요
+};
+
+// [Node 1] 비서가재
 const biseoNode = async (state: GraphState) => {
   const lastMessage = state.messages[state.messages.length - 1];
   console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
@@ -25,10 +36,10 @@ const biseoNode = async (state: GraphState) => {
   return { intent: isWork ? 'WORK' : 'CASUAL' };
 };
 
-// [Node 2] 잡담 처리
+// [Node 2] 잡담
 const chitchatNode = async (state: GraphState) => ({ finalResponse: "재밌네요! 🦞" });
 
-// [Node 3] 업무 준비: Task 생성 (INBOX)
+// [Node 3] 업무 준비 (INBOX 생성)
 const prepareNode = async (state: GraphState) => {
   console.log(`👔 [Graph] 업무 모드 진입`);
   const lastMessage = state.messages[state.messages.length - 1];
@@ -36,37 +47,52 @@ const prepareNode = async (state: GraphState) => {
   return { taskId };
 };
 
-// [Node 4] 매니저가재: 토론 주재 (Central Hub)
+// [Node 4] 매니저가재 (Central Hub)
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
-    // 매니저가 다음 행동(Action)을 결정
     const action = await manager.processTask(state.taskId, state.lastSpeaker);
     
     if (!action) {
-        // 더 이상 할 일이 없으면 종료
         return { finalResponse: "모든 공정 처리가 완료되었습니다." }; 
     }
 
+    // 매니저가 'SPAWN_AGENT' 액션을 리턴하면 -> nextSpeaker로 설정
     console.log(`👔 [Graph] 매니저 결정: ${action.agentId} 호출`);
-    return { actions: [action], nextSpeaker: action.agentId };
+    
+    // *주의* 매니저의 Action(Spawn 요청)은 그 자체로 의미가 있지만,
+    // workflow 상에서는 '다음 노드(workerNode)'에게 '누굴 실행할지' 알려주는 용도로 쓰임.
+    // 여기서는 actions 배열에 추가하지 않고 nextSpeaker만 넘길 수도 있지만,
+    // 기록을 위해 actions에도 추가함.
+    return { actions: [action], nextSpeaker: action.agentId }; // state에 nextSpeaker 필드 추가 필요 (임시로 actions[last] 활용)
 };
 
-// [Node 5] 워커 실행 (Mock Execution)
-// 실제로는 여기서 OpenClaw Gateway에 Spawn 요청을 보내고 결과를 기다림.
-// 지금은 바로 '완료' 처리하고 매니저에게 턴을 넘김.
+// [Node 5] 워커 실행 (Unified Worker Node)
 const workerNode = async (state: GraphState) => {
-    const action = state.actions?.[state.actions.length - 1];
-    if (!action) return {};
+    const lastAction = state.actions?.[state.actions.length - 1];
+    if (!lastAction || lastAction.type !== 'SPAWN_AGENT') return {};
 
-    const agentId = action.agentId;
-    console.log(`👷 [Graph] ${agentId} 가재 실행 중... (Mock)`);
-    
-    // [TODO] 실제 에이전트 실행 대기 로직 필요
-    // await openclaw.waitForAgent(agentId);
+    const agentId = lastAction.agentId;
+    console.log(`👷 [Graph] Worker Node 진입: ${agentId} 실행`);
 
-    // 실행 완료 후, 해당 에이전트를 'lastSpeaker'로 설정하여 매니저에게 보고
-    return { lastSpeaker: agentId };
+    const agent = agents[agentId];
+    if (agent) {
+        // 1. Agent Logic 실행 (내부적으로 Spawn 요청 생성)
+        const action = await agent.processTask(state.taskId);
+        
+        // 2. 결과 처리
+        // 여기서 반환된 action은 '나(Agent)를 Spawn 해줘!'라는 요청임.
+        // 실제 런타임(Main Agent)에서는 이 action을 보고 sessions_spawn을 호출함.
+        // 지금은 '실행 완료됨'으로 간주하고 루프를 돌리기 위해 lastSpeaker 갱신.
+        
+        return { 
+            actions: action ? [action] : [], 
+            lastSpeaker: agentId 
+        };
+    } else {
+        console.warn(`⚠️ [Graph] 알 수 없는 에이전트 ID: ${agentId}`);
+        return { lastSpeaker: agentId }; // 에러 방지용 넘김
+    }
 };
 
 // 3. 그래프 구성
@@ -75,7 +101,7 @@ const builder = new StateGraph<GraphState>({
     messages: { reducer: (a: string[], b: string[]) => a.concat(b), default: () => [] },
     intent: { reducer: (a, b) => b ?? a, default: () => undefined },
     taskId: { reducer: (a, b) => b ?? a, default: () => undefined },
-    lastSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined }, // [New]
+    lastSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
     actions: { reducer: (a, b) => (a ?? []).concat(b ?? []), default: () => [] },
     finalResponse: { reducer: (a, b) => b ?? a, default: () => undefined },
   }
@@ -84,8 +110,8 @@ const builder = new StateGraph<GraphState>({
 builder.addNode('biseo', biseoNode);
 builder.addNode('chitchat', chitchatNode);
 builder.addNode('prepare', prepareNode);
-builder.addNode('manager', managerNode); // [Central Hub]
-builder.addNode('worker', workerNode);   // [Unified Worker]
+builder.addNode('manager', managerNode);
+builder.addNode('worker', workerNode);
 
 builder.setEntryPoint('biseo');
 
@@ -94,15 +120,12 @@ builder.addConditionalEdges('biseo', (state) => {
 });
 
 builder.addEdge('chitchat', END);
-
-// 흐름: Prepare -> Manager <-> Worker -> END
 builder.addEdge('prepare', 'manager');
 
 builder.addConditionalEdges('manager', (state) => {
-    // 할 일이 있으면 Worker로, 없으면(finalResponse) END로
     return state.finalResponse ? END : 'worker';
 });
 
-builder.addEdge('worker', 'manager'); // Worker가 끝나면 다시 Manager에게 보고 (Loop)
+builder.addEdge('worker', 'manager');
 
 export const graph = builder.compile();
