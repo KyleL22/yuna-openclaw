@@ -44,7 +44,11 @@ const agents: Record<string, any> = {
 const biseoNode = async (state: GraphState) => {
   const lastMessage = state.messages[state.messages.length - 1];
   console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
-  const isWork = lastMessage.includes('개발') || lastMessage.includes('만들어') || lastMessage.includes('설계');
+  
+  // [Fix] 키워드 추가 (진행, 에픽, 생성, 수정 등)
+  const keywords = ['개발', '만들어', '설계', '진행', '에픽', '생성', '수정', '추가', '개선'];
+  const isWork = keywords.some(keyword => lastMessage.includes(keyword));
+  
   return { intent: isWork ? 'WORK' : 'CASUAL' };
 };
 
