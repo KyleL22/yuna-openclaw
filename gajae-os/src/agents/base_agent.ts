@@ -10,21 +10,14 @@ export class BaseAgent {
   protected async logChronicle(type: string, content: string, metadata: any = {}) {
     const runId = new Date().toISOString().split('T')[0];
     
-    // [Mock] 4종 세트 기본값 채우기 (LLM 없을 때 대비)
-    const enrichedMetadata = {
-        emotion: metadata.emotion || 'Neutral', // ❤️
-        thought: metadata.thought || '주어진 업무를 분석 중...', // 🧠
-        intent: metadata.intent || 'EXECUTE_TASK', // ❗️
-        ...metadata
-    };
-
+    // [Fix] Mock 데이터 제거 (순수하게 전달받은 metadata만 저장)
     await db.collection('chronicles').add({
       run_id: runId,
       timestamp: new Date().toISOString(),
       speaker_id: this.agentId,
       type: type,
-      content: content, // 💬 답변
-      metadata: enrichedMetadata
+      content: content,
+      metadata: metadata // 가짜 데이터 없음!
     });
     console.log(`📝 [Log] ${this.agentId}: ${content.slice(0, 30)}...`);
   }
