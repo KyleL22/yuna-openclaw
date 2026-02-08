@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.6 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.7 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
@@ -8,54 +8,64 @@
 ## 1. 런타임 아키텍처 (Runtime Architecture)
 
 **[물리적 환경]**: Mac (PC) + Telegram Bridge + Firestore Database.
-**[코드베이스]**: `gajae-os` (TypeScript + LangGraph.js)
+**[코드베이스]**: `gajae-os` (TypeScript + LangGraph.js) -> **Orchestration Engine**
 
 ```mermaid
 graph TD
     User["👤 CEO (Telegram)"] -->|Message| Bridge["🌉 Telegram Bot API"]
-    Bridge -->|Webhook| PC["🖥️ OpenClaw (Mac)"]
+    Bridge -->|Webhook| PC["🖥️ OpenClaw Gateway"]
     
     PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
     
-    subgraph "OpenClaw Host"
-        Biseo["🦞 비서가재 (Gatekeeper)"]
+    subgraph "OpenClaw Runtime"
+        Gateway["⛩️ Gateway Service"]
         
-        subgraph "gajae-os (LangGraph.js)"
-            Manager["👔 매니저가재 (Process Manager)"]
-            Squad["👥 Sanctuary Squad (10 Experts)"]
+        subgraph "Engine"
+            OS["⚙️ gajae-os (LangGraph Engine)"]
+        end
+        
+        subgraph "Workers (Micro-Agents)"
+            Biseo["🦞 Biseo (biseo)"]
+            PM["👔 Manager (pm)"]
+            PO["💡 PO (po)"]
+            DEV["💻 Dev (dev)"]
+            ETC["... (others)"]
         end
 
-        Biseo -->|Delegate & Focus| Manager
-        Manager -->|Direct Spawn| Squad
-        
-        Squad -->|Execute| Tools["🛠️ OS Tools (Browser/Mail/Messenger)"]
+        Gateway -- "Trigger" --> Biseo
+        Biseo -- "Call API" --> OS
+        OS -- "Spawn Request" --> Gateway
+        Gateway -- "Spawn" --> PM
+        Gateway -- "Spawn" --> PO
+        Gateway -- "Spawn" --> DEV
         
         %% All agents write to DB
-        Biseo -.->|"[CEO_COMMAND] / [FOCUS_STATE]"| DB
-        Manager -.->|"[PROCESS_STATE] / [URGENT_INTERRUPT]"| DB
-        Squad -.->|"[AGENT_DISCUSSION] / [ROLE_REPORT]"| DB
-        Tools -.->|"[ACTION_RESULT]"| DB
+        Biseo -.->|"[CEO_COMMAND]"| DB
+        OS -.->|"[PROCESS_STATE]"| DB
+        PM -.->|"[DECISION]"| DB
+        PO -.->|"[PLAN]"| DB
+        DEV -.->|"[CODE]"| DB
     end
     
     DB -->|Realtime Stream| Dashboard["📊 Web Dashboard"]
 ```
 
-### 1.1 성역의 수호자들 (Sanctuary Squad - Domain Experts)
-**[Concept]**: 12명의 가재는 각자 **고유한 전문 도메인(Role)**과 **페르소나(Persona)**를 가집니다. **모든 도구(Tool) 사용 권한**을 가지며, 역할에 맞게 자율적으로 판단하여 사용합니다.
+### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Micro-Agents)
+**[Concept]**: 12명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. `gajae-os`는 이들을 직접 실행하는 게 아니라, **Gateway API를 통해 호출(Spawn)**합니다.
 
-| 코드 ID | 한글 애칭 | 역할 (Role) | 비고 |
+| 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
-| `biseo` | **비서가재** | 문지기 (Gatekeeper) | CEO 직속, 명령 수신, `INBOX` 관리, `Focus` 추적 |
-| `pm` | **매니저가재** | 공정 관리 (Manager) | 13공정 통제, 우선순위 조정, 일정 관리 |
-| `po` | **기획가재** | 기획 (Product Owner) | 백로그 분류, 요구사항 정의, 스펙 결정 |
-| `ba` | **분석가재** | 분석 (Business Analyst) | 비즈니스 로직, 데이터 분석 |
-| `ux` | **디자인가재** | 디자인 (UX/UI Designer) | 사용자 경험, UI 설계 |
-| `dev` | **개발가재** | 개발 (Developer) | 코드 구현, 아키텍처 |
-| `qa` | **품질가재** | 품질 (Quality Assurance) | 테스트, 버그 검증 |
-| `hr` | **인사가재** | 인사 (HR Manager) | 리소스/일정 조율 |
-| `mkt` | **마케팅가재** | 마케팅 (Marketer) | 대외 홍보, 카피라이팅 |
-| `legal` | **변호사가재** | 법무 (Legal Advisor) | 라이선스/법적 검토 |
-| `cs` | **민원가재** | 고객지원 (CS Specialist) | 사용자 피드백 대응 |
+| `biseo` | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신 (1차 진입점) |
+| `pm` | **매니저가재** | 공정 관리 (Manager) | 스케줄링 및 공정 통제 |
+| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성 |
+| `ba` | **분석가재** | 분석 (Business Analyst) | 요구사항 분석 |
+| `ux` | **디자인가재** | 디자인 (UX/UI Designer) | 디자인 가이드 작성 |
+| `dev` | **개발가재** | 개발 (Developer) | 코드 구현 |
+| `qa` | **품질가재** | 품질 (Quality Assurance) | 테스트 수행 |
+| `hr` | **인사가재** | 인사 (HR Manager) | 리소스 관리 |
+| `mkt` | **마케팅가재** | 마케팅 (Marketer) | 카피라이팅 |
+| `legal` | **변호사가재** | 법무 (Legal Advisor) | 라이선스 검토 |
+| `cs` | **민원가재** | 고객지원 (CS Specialist) | 응대 매뉴얼 작성 |
 
 ---
 
@@ -185,10 +195,11 @@ classDiagram
 3.  **계획 (Scheduling):** 매니저가재(PM)가 분류된 Task의 우선순위를 보고 `BACKLOG` -> `PF(착수)`로 상태 변경.
 4.  **긴급 대응:** CEO가 "긴급!" 선언 시, 비서가재가 즉시 `URGENT Epic` 생성 후 매니저가재 호출 -> 강제 인터럽트 발동.
 
-### 3.2 Direct Spawn & Context Injection
-*   **No Watcher:** 별도의 Watcher 프로세스 없이, 매니저가재가 필요할 때 `sessions_spawn` 툴을 호출하여 에이전트를 직접 깨움.
-*   **Context Injection:** 깨울 때 해당 에이전트의 `RoleReport` (과거 요약)와 `Current Task Info`를 주입하여 실행.
-*   **Focus Tracking:** 비서가재는 항상 `Current Focus` (현재 어떤 Epic/Task를 보고 있는지)를 유지하여 대화의 문맥을 연결함.
+### 3.2 Direct Spawn via Gateway (Orchestration)
+*   **Engine (`gajae-os`):** 상태 머신(LangGraph)만 관리. 실제 작업은 수행하지 않음.
+*   **Spawn:** 상태가 `PF`가 되면, `gajae-os`가 OpenClaw Gateway API를 호출하여 **`po` 에이전트**를 Spawn.
+*   **Worker (`po`):** 깨어나서 Firestore의 Task 정보를 읽고, 기획서를 작성하고, `RoleReport`를 남기고 종료.
+*   **Loop:** `gajae-os`는 Worker의 종료(`DONE`)를 감지하고 다음 단계로 전이.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
 
@@ -257,13 +268,14 @@ docs/
 │   │   ├── 2-design/ (gui.md)
 │   │   └── 3-dev/ (api.md)
 ├── core/role/              # 가재별 역할 정의 (ROLE_DEV.md)
-└── gajae-os/               # 시스템 코드 (TS)
+└── gajae-os/               # 시스템 코드 (TS - Orchestrator)
 ```
 
 ### 4.2 기술 스택
 *   **Language:** TypeScript (Node.js)
 *   **Orchestration:** LangGraph.js
 *   **Storage:** Firestore (Data/Queue) + Local Git (Docs/Code)
+*   **Runtime:** OpenClaw Multi-Agent System (11 Agents)
 
 ---
 
