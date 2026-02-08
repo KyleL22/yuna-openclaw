@@ -2,12 +2,14 @@ import { StateGraph, END } from '@langchain/langgraph';
 import { BiseoAgent } from '../agents/biseo';
 import { ManagerAgent } from '../agents/manager';
 import { POAgent } from '../agents/po';
+import { AgentAction } from '../core/openclaw';
 
 // 1. 상태(State) 정의
 export interface GraphState {
   messages: string[];
   intent?: 'WORK' | 'CASUAL';
   taskId?: string;
+  action?: AgentAction; // [New] 외부로 내보낼 행동(Spawn 요청 등)
   finalResponse?: string;
 }
 
@@ -21,7 +23,7 @@ const biseoNode = async (state: GraphState) => {
   const lastMessage = state.messages[state.messages.length - 1];
   console.log(`🦞 [Graph] 비서가재 호출: "${lastMessage}"`);
 
-  const isWork = lastMessage.includes('개발') || lastMessage.includes('만들어');
+  const isWork = lastMessage.includes('개발') || lastMessage.includes('만들어') || lastMessage.includes('설계');
   const intent = isWork ? 'WORK' : 'CASUAL';
 
   return { intent };
@@ -45,12 +47,18 @@ const workNode = async (state: GraphState) => {
   return { taskId };
 };
 
-// [Node 4] 기획가재: PF -> RFE_RFK
+// [Node 4] 기획가재: PF -> Spawn PO
 const poNode = async (state: GraphState) => {
     if (!state.taskId) return {};
     
-    await po.processTask(state.taskId);
-    return { finalResponse: `💡 [기획 완료] 기획서 작성이 완료되었습니다. 승인 대기 중(RFE_RFK).` };
+    // 직접 일하지 않고 Action을 반환
+    const action = await po.processTask(state.taskId);
+    
+    if (action) {
+        return { action, finalResponse: `기획가재(PO)를 호출하여 상세 기획을 진행합니다.` };
+    }
+    
+    return { finalResponse: `이미 처리된 작업이거나 오류가 발생했습니다.` };
 };
 
 // 3. 그래프 구성
@@ -59,6 +67,7 @@ const builder = new StateGraph<GraphState>({
     messages: { reducer: (a: string[], b: string[]) => a.concat(b), default: () => [] },
     intent: { reducer: (a, b) => b ?? a, default: () => undefined },
     taskId: { reducer: (a, b) => b ?? a, default: () => undefined },
+    action: { reducer: (a, b) => b ?? a, default: () => undefined }, // [New]
     finalResponse: { reducer: (a, b) => b ?? a, default: () => undefined },
   }
 });
@@ -66,17 +75,15 @@ const builder = new StateGraph<GraphState>({
 builder.addNode('biseo', biseoNode);
 builder.addNode('chitchat', chitchatNode);
 builder.addNode('work', workNode);
-builder.addNode('po', poNode); // PO 노드 추가
+builder.addNode('po', poNode);
 
 builder.setEntryPoint('biseo');
 
-// 분기 조건
 builder.addConditionalEdges('biseo', (state) => {
   return state.intent === 'WORK' ? 'work' : 'chitchat';
 });
 
 builder.addEdge('chitchat', END);
-// [핵심] work(매니저) -> po(기획) -> END
 builder.addEdge('work', 'po');
 builder.addEdge('po', END);
 
