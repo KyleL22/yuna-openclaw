@@ -1,14 +1,15 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum';
 
 /**
  * 매니저가재 (Manager Gajae)
  * - 역할: Process Manager
- * - 수정 사항: 특정 Task ID를 받아서 처리하도록 변경
+ * - 수정: Import 경로 수정
  */
 export class ManagerAgent {
   
-  // [Refactor] 특정 Task 처리 (LangGraph에서 호출)
+  // 특정 Task 처리
   async processTask(taskId: string) {
     console.log(`👔 [매니저가재] Task(ID:${taskId}) 처리 시작...`);
 
@@ -24,7 +25,7 @@ export class ManagerAgent {
     await this.triageAndSchedule(task);
   }
 
-  // 기존 로직 유지 (분류 및 스케줄링)
+  // 분류 및 스케줄링
   private async triageAndSchedule(task: Task) {
     console.log(`👔 [매니저가재] 분류 중: "${task.title}"`);
 
