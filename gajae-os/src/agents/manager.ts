@@ -1,34 +1,24 @@
-import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
-import { TaskStatus as Status } from '../types/task_status.enum';
-import { OpenClawClient, AgentAction } from '../core/openclaw';
-
-/**
- * 매니저가재 (Manager Gajae) - Active Moderator
- * - 역할: 13공정 관리 및 토론 주도
- * - 수정: [FIX] Total Gate Control (모든 단계 종료 시 CEO 승인 필수)
- */
+// ... (상단 Import 생략) ...
 export class ManagerAgent {
-  private openclaw = new OpenClawClient();
-  private agentId = 'pm';
+  // ... (다른 멤버 변수 생략) ...
 
+  // 토론 참여자 정의 (공정별)
+  // [Fix] PF 단계에 UX, DEV 추가 (기획 완성도 향상)
   private readonly participants: Record<string, string[]> = {
-    [Status.PF]: ['po'],
-    [Status.FBS]: ['dev'],
-    [Status.RFD]: ['ux'],
-    [Status.FBD]: ['ux', 'po', 'dev'],
-    [Status.RFE_RFK]: ['po', 'dev'],
-    [Status.FUE]: ['dev'],
-    [Status.RFQ]: ['dev', 'qa'],
-    [Status.FUQ]: ['qa'],
-    [Status.RFT]: ['qa', 'po'],
-    [Status.FUT]: ['dev', 'qa'],
-    [Status.FL]: ['po', 'mkt'],
+    [Status.PF]: ['po', 'ux', 'dev'], // 기획: PO(발제) -> UX(경험) -> DEV(가능성) -> PO(정리)
+    [Status.FBS]: ['dev', 'po'], // 기술검토: DEV(주도) -> PO(확인)
+    [Status.RFD]: ['ux'], // 디자인요청: UX 단독
+    [Status.FBD]: ['ux', 'po', 'dev'], // 디자인완료: UX -> PO/DEV 리뷰
+    [Status.RFE_RFK]: ['po', 'dev'], // 개발착수승인
+    [Status.FUE]: ['dev'], // 개발
+    [Status.RFQ]: ['dev', 'qa'], // QA요청
+    [Status.FUQ]: ['qa'], // QA진행
+    [Status.RFT]: ['qa', 'po'], // 배포승인
+    [Status.FUT]: ['dev', 'qa'], // 스테이징
+    [Status.FL]: ['po', 'mkt'], // 출시
   };
 
-  /**
-   * Task 진행 및 토론 주재
-   */
+  // ... (processTask 등 나머지 로직은 그대로 유지) ...
   async processTask(taskId: string, lastSpeaker?: string, intent?: string): Promise<AgentAction | null> {
     const docRef = db.collection('tasks').doc(taskId);
     const doc = await docRef.get();
@@ -39,8 +29,6 @@ export class ManagerAgent {
 
     console.log(`👔 [매니저가재] Task 상태: ${currentStatus}, Last Speaker: ${lastSpeaker || 'None'}, Intent: ${intent || '-'}`);
 
-    // [0. CEO 승인 처리]
-    // 현재 상태가 '승인 대기중(WAIT)'이 아니더라도, 승인 의도가 들어오면 다음 단계로 강제 전이(Super Pass 가능)
     if (intent === 'CEO_APPROVE') {
         await this.logChronicle('MODERATION', 'CEO 승인이 확인되었습니다. 다음 단계로 전이합니다.', {
             emotion: 'Relieved',
@@ -50,7 +38,6 @@ export class ManagerAgent {
         return await this.advanceToNextStage(task, docRef);
     }
 
-    // 1. 초기 스케줄링 (INBOX -> PF)
     if (currentStatus === Status.INBOX || currentStatus === Status.BACKLOG) {
         await docRef.update({ status: Status.PF, epic_id: 'E001-default', updated_at: new Date().toISOString() });
         await this.logChronicle('MODERATION', `Task 접수 완료. 기획(PF) 단계로 착수합니다.`, {
@@ -61,7 +48,6 @@ export class ManagerAgent {
         return this.createSpawnAction('po', task, "백로그를 분석하고 우선순위를 보고하세요.");
     }
 
-    // 2. 토론 루프
     const requiredMembers = this.participants[currentStatus];
     if (requiredMembers) {
         let nextIndex = 0;
@@ -72,25 +58,21 @@ export class ManagerAgent {
         if (nextIndex < requiredMembers.length) {
             const nextMember = requiredMembers[nextIndex];
             await this.logChronicle('MODERATION', `${currentStatus} 단계 진행을 위해 ${nextMember} 가재에게 발언권을 넘깁니다.`);
-            return this.createSpawnAction(nextMember, task, `현재 ${currentStatus} 단계입니다. 맡은 바 임무를 수행하세요.`);
+            return this.createSpawnAction(nextMember, task, `현재 ${currentStatus} 단계입니다. 이전 내용을 바탕으로 의견을 제시하거나 작업을 수행하세요.`);
         } else {
-            // [핵심 수정] 한 바퀴 돌았으면 무조건 '승인 대기' 상태로 보고만 함. (자동 전이 X)
             console.log(`   -> [완료] ${currentStatus} 단계 작업 완료. CEO 승인 대기.`);
             await this.logChronicle('MODERATION', `${currentStatus} 단계의 모든 작업이 완료되었습니다. CEO 승인을 기다립니다.`);
-            
-            // 여기서 더 이상 Spawn 하지 않고 null 리턴 -> 그래프 종료 -> 대기 상태
             return null; 
         }
     }
 
     return null;
   }
-
-  // 다음 단계로 전이 (CEO 승인 시에만 호출됨)
+  
+  // ... (나머지 메서드 생략) ...
   private async advanceToNextStage(task: Task, docRef: FirebaseFirestore.DocumentReference): Promise<AgentAction | null> {
       let nextStatus: TaskStatus | null = null;
       
-      // 13단계 순차 전이 로직
       switch (task.status) {
           case Status.PF: nextStatus = Status.FBS; break;
           case Status.FBS: nextStatus = Status.RFD; break;
@@ -109,7 +91,6 @@ export class ManagerAgent {
           await docRef.update({ status: nextStatus, updated_at: new Date().toISOString() });
           await this.logChronicle('MODERATION', `단계 전이: ${task.status} -> ${nextStatus}`);
           
-          // 바뀐 단계의 첫 타자 호출
           const nextMembers = this.participants[nextStatus];
           if (nextMembers && nextMembers.length > 0) {
               return this.createSpawnAction(nextMembers[0], { ...task, status: nextStatus }, "새로운 단계입니다. 작업을 시작하세요.");
