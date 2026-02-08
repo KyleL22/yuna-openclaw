@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.4 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.5 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **사회자가재(Main Agent)**가 전체 시스템을 오케스트레이션하고, **`gajae-os` (Engine)**는 순수 로직 판단만 담당합니다.
@@ -20,7 +20,7 @@ graph TD
         DB[("🔥 Firestore (Memory & Artifacts)")]
     end
     
-    subgraph "Sanctuary Squad (10 Micro-Agents)"
+    subgraph "Sanctuary Squad (10 Experts)"
         PM["👔 Manager"]
         PO["💡 PO"]
         DEV["💻 Dev"]
@@ -56,22 +56,22 @@ graph TD
     DB -.->|"Realtime Stream (onSnapshot)"| Web
 ```
 
-### 1.1 성역의 수호자들 (Sanctuary Squad - 10 Micro-Agents)
-**[Concept]**: 10명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. (비서가재는 Main Agent로 통합됨)
+### 1.1 성역의 수호자들 (The Gajae Legion - Total 11 Agents)
+**[Concept]**: **사회자가재(Main)**를 중심으로 **10명의 전문 스쿼드**가 협업하여 총 11명의 가재 군단을 이룹니다.
 
-| 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
-| :--- | :--- | :--- | :--- |
-| `main` | **사회자가재** | 시스템 호스트 | CEO 명령 수신, CLI 실행, LLM 판단 대행, Spawn 실행 |
-| `pm` | **매니저가재** | 공정 관리 (Manager) | 스케줄링, 토론 주재 로직 (Main이 대행) |
-| `po` | **기획가재** | 기획 | 기획서 작성 (Spawn 대상) |
-| `dev` | **개발가재** | 개발 | 코드 구현 (Spawn 대상) |
-| `qa` | **품질가재** | 품질 | 테스트 (Spawn 대상) |
-| `ba` | **분석가재** | 분석 | 요구사항 분석 (Spawn 대상) |
-| `ux` | **디자인가재** | 디자인 | 디자인 가이드 (Spawn 대상) |
-| `hr` | **인사가재** | 인사 | 리소스 관리 (Spawn 대상) |
-| `mkt` | **마케팅가재** | 마케팅 | 카피라이팅 (Spawn 대상) |
-| `legal` | **변호사가재** | 법무 | 라이선스 검토 (Spawn 대상) |
-| `cs` | **민원가재** | 고객지원 | 응대 매뉴얼 (Spawn 대상) |
+| 구분 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
+| :--- | :--- | :--- | :--- | :--- |
+| **Host** | `main` | **사회자가재** | 시스템 호스트 | CEO 명령 수신, CLI 실행, LLM 판단 대행, Spawn 실행 |
+| **Squad** | `pm` | **매니저가재** | 공정 관리 | 스케줄링, 토론 주재 로직 (Main이 대행) |
+| **Squad** | `po` | **기획가재** | 기획 | 기획서 작성 (Spawn 대상) |
+| **Squad** | `dev` | **개발가재** | 개발 | 코드 구현 (Spawn 대상) |
+| **Squad** | `qa` | **품질가재** | 품질 | 테스트 (Spawn 대상) |
+| **Squad** | `ba` | **분석가재** | 분석 | 요구사항 분석 (Spawn 대상) |
+| **Squad** | `ux` | **디자인가재** | 디자인 | 디자인 가이드 (Spawn 대상) |
+| **Squad** | `hr` | **인사가재** | 인사 | 리소스 관리 (Spawn 대상) |
+| **Squad** | `mkt` | **마케팅가재** | 마케팅 | 카피라이팅 (Spawn 대상) |
+| **Squad** | `legal` | **변호사가재** | 법무 | 라이선스 검토 (Spawn 대상) |
+| **Squad** | `cs` | **민원가재** | 고객지원 | 응대 매뉴얼 (Spawn 대상) |
 
 ---
 
@@ -94,7 +94,7 @@ classDiagram
         +String title
         +EpicStatus status
         +Priority priority
-        +String thread_id
+        +String thread_id (LangGraph)
         +Map context_snapshot
     }
 
@@ -110,9 +110,8 @@ classDiagram
     class Artifact {
         +String id
         +String epic_id
-        +String type (1pager, code, design...)
-        +String title
-        +String content (Text/Markdown)
+        +String type
+        +String content (Markdown)
         +DateTime created_at
     }
 
@@ -125,11 +124,40 @@ classDiagram
 
     class ChronicleEntry {
         +String id
+        +String run_id
         +DateTime timestamp
         +String speaker_id
         +DialogueType type
         +String content
         +Map metadata (emotion, intent)
+    }
+
+    %% Enums
+    class TaskStatus {
+        <<enumeration>>
+        INBOX
+        BACKLOG
+        PF, FBS, RFD, FBD, RFE_RFK
+        FUE, RFQ, FUQ, RFT, FUT
+        FL, FNL
+    }
+
+    class Priority {
+        <<enumeration>>
+        URGENT (Interrupt)
+        HIGH
+        NORMAL
+        LOW
+    }
+
+    class DialogueType {
+        <<enumeration>>
+        CEO_COMMAND
+        AGENT_DISCUSSION (🗣️)
+        AGENT_RESPONSE (💬)
+        INTENT (❗️)
+        EMOTION (❤️)
+        MODERATION (⚖️)
     }
 
     Project "1" *-- "many" Epic : Contains
@@ -141,14 +169,35 @@ classDiagram
 ### 2.2 Firestore Schema Definition
 
 #### A. `/projects/{projectId}`
+*   `name`: 프로젝트명
+*   `current_epics`: 진행 중인 Epic ID 목록
+
 #### B. `/epics/{epicId}`
-#### C. `/tasks/{taskId}`
+*   `project_id`: 소속 프로젝트 ID
+*   `title`: 에픽 명칭
+*   `status`: 상태 (PLANNING, IN_PROGRESS, DONE, PAUSED)
+*   `priority`: 우선순위 (**URGENT**, HIGH, NORMAL, LOW)
+*   `thread_id`: LangGraph 상태 저장용 ID
+*   `context_snapshot`: 장기 보존용 상태 스냅샷 (Resync 용)
+
+#### C. `/tasks/{taskId}` (Work Queue Item)
+*   `epic_id`: 소속 에픽 ID (**Optional** - 없으면 백로그)
+*   `project_id`: 소속 프로젝트 ID
+*   `title`: 작업명
+*   `instruction`: 구체적 작업 지시
+*   `status`: **INBOX**, **BACKLOG**, **PF**, ... (13공정)
+*   `assignee`: 담당 가재 ID (`dev`, `po`...)
+
 #### D. `/epics/{epicId}/artifacts/{artifactId}` (New)
 *   `type`: 산출물 타입 (1pager, api_spec...)
 *   **`content`**: **산출물 내용 전문 (Markdown Text)**
 *   `created_at`: 생성 일시
 
-#### E. `/chronicles/{runId}/entries/{entryId}`
+#### E. `/chronicles/{runId}/entries/{entryId}` (Logs)
+*   `speaker_id`: 발화자 (main, pm, dev...)
+*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️), `MODERATION`(⚖️)
+*   `content`: 마크다운 내용
+*   `metadata`: 상세 정보 (숨김 처리 가능)
 
 ---
 
@@ -166,8 +215,36 @@ classDiagram
 *   **Execution:** `main` Agent(이미 LLM임)가 이 요청을 보고 생각한 뒤, 답을 가지고 `gajae-os`를 다시 실행.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
-*   각 공정(Step)의 끝에는 **"CEO 승인(Human-in-the-loop)"** 단계가 필수.
-*   담당 가재가 "완료 보고"를 올리면 -> 사회자가재가 CEO에게 알림 -> CEO 승인 시 다음 단계로 전이.
+모든 작업(Task)은 아래 13단계 공정을 엄격하게 따릅니다. 각 단계 전환 시 **CEO의 승인(`Approval Gate`)**이 필수입니다.
+
+```mermaid
+stateDiagram-v2
+    [*] --> INBOX
+    INBOX --> BACKLOG : Triage by PO
+    BACKLOG --> PF : Scheduled by PM
+
+    state "Planning Phase" as Planning {
+        PF --> FBS
+        FBS --> RFD
+        RFD --> FBD
+        FBD --> RFE_RFK : Design Approved
+    }
+    
+    RFE_RFK --> CEO_Gate_1 : Wait for CEO
+    CEO_Gate_1 --> FUE : CEO Approved
+
+    state "Execution Phase" as Execution {
+        FUE --> RFQ
+        RFQ --> FUQ
+    }
+    
+    FUQ --> CEO_Gate_2 : Wait for CEO
+    CEO_Gate_2 --> RFT : CEO Approved
+    
+    RFT --> FUT
+    FUT --> FL
+    FL --> [*]
+```
 
 ### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
 *   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
@@ -198,7 +275,6 @@ yuna-openclaw/
     ├── .env                # (루트 참조)
     └── cli.ts              # CLI Entry Point
 ```
-(※ `docs/epics/` 폴더는 사용하지 않음)
 
 ### 4.2 기술 스택
 *   **Language:** TypeScript (Node.js)
@@ -208,4 +284,4 @@ yuna-openclaw/
 
 ---
 
-**[결론]**: 이 설계도는 **사회자가재(Main/Brain)**와 **가재 OS(Body)**가 결합된 완전 자율형 조직 시스템이며, 모든 데이터(산출물 포함)는 **Firestore에 중앙 집중화**되어 관리됩니다. 🦞🚀
+**[결론]**: 이 설계도는 **사회자가재(Main/Brain)**와 **가재 OS(Body)**가 결합된 완전 자율형 조직 시스템이며, 모든 데이터는 **Firestore에 중앙 집중화**되어 관리됩니다. 🦞🚀
