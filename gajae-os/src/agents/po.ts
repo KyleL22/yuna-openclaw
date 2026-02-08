@@ -1,43 +1,46 @@
-import { db } from '../core/firebase';
-import { Task } from '../types/task.interface';
-import { TaskStatus } from '../types/task_status.enum'; // [Fix] Import 분리
-import { OpenClawClient, AgentAction } from '../core/openclaw';
+import { BaseAgent } from './base_agent';
+import { AgentAction } from '../core/openclaw';
+import { TaskStatus } from '../types/task_status.enum';
 
 /**
- * 기획가재 (PO Gajae) - Orchestrator Version
- * - 역할: Product Owner Node
- * - 기능: PF 단계 Task 확인 -> PO Agent Spawn 지시
+ * 기획가재 (PO Gajae)
+ * - BaseAgent 상속으로 Context Loading 기능 탑재
  */
-export class POAgent {
-  private openclaw = new OpenClawClient();
+export class POAgent extends BaseAgent {
+  
+  constructor() {
+    super('po'); // Agent ID: po
+  }
 
   async processTask(taskId: string): Promise<AgentAction | null> {
-    console.log(`💡 [기획가재(OS)] Task(ID:${taskId}) 처리 준비...`);
+    console.log(`💡 [기획가재(OS)] Task(ID:${taskId}) 처리 준비 (Context Loading...)`);
 
-    const docRef = db.collection('tasks').doc(taskId);
-    const doc = await docRef.get();
-    
-    if (!doc.exists) return null;
-    const task = doc.data() as Task;
+    // 1. Context 로드 (Task + Artifacts + Chronicles)
+    const contextString = await this.buildContext(taskId);
+    const task = await this.loadTask(taskId);
 
-    // 이미 처리 중이거나 완료되었으면 스킵
+    if (!task) return null;
+
+    // 이미 처리 중이거나 완료되었으면 스킵 (로직은 상황에 따라 유연하게)
     if (task.status === TaskStatus.RFE_RFK) {
         return null;
     }
 
-    // 1. PO Agent에게 시킬 일(Instruction) 정의
+    // 2. Prompt 구성
     const agentTask = `
       [Role] 너는 가재 컴퍼니의 '기획가재(PO)'다.
-      [Goal] 다음 요구사항을 바탕으로 '1-Pager 기획서'를 작성하라.
-      [Input] "${task.instruction}"
+      [Goal] 주어진 문맥을 바탕으로 '1-Pager 기획서'를 작성하라.
+      
+      ${contextString}
+
       [Output] 
         1. 'docs/epics/${task.epic_id || 'E001-default'}/1-plan/1pager.md' 파일 생성.
         2. Firestore '/epics/.../artifacts'에 링크 저장.
         3. 작업 완료 후 'DONE' 보고.
     `;
 
-    // 2. Spawn Action 생성 (직접 파일 안 만듦!)
-    const action = this.openclaw.spawnAgent('po', agentTask, { taskId });
+    // 3. Spawn Action 생성
+    const action = this.openclaw.spawnAgent(this.agentId, agentTask, { taskId });
 
     console.log(`💡 [기획가재(OS)] PO Agent Spawn 요청 생성 완료.`);
     return action;
