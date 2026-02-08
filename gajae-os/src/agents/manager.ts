@@ -11,18 +11,63 @@ export class ManagerAgent {
   private openclaw = new OpenClawClient();
   private agentId = 'pm';
 
-  private readonly participants: Record<string, string[]> = {
-    [Status.PF]: ['po', 'ux', 'dev'],
-    [Status.FBS]: ['dev', 'po'],
-    [Status.RFD]: ['ux'],
-    [Status.FBD]: ['ux', 'po', 'dev'],
-    [Status.RFE_RFK]: ['po', 'dev'],
-    [Status.FUE]: ['dev'],
-    [Status.RFQ]: ['dev', 'qa'],
-    [Status.FUQ]: ['qa'],
-    [Status.RFT]: ['qa', 'po'],
-    [Status.FUT]: ['dev', 'qa'],
-    [Status.FL]: ['po', 'mkt'],
+  // [Phase Definition] 각 공정의 목적과 산출물 (Strictly Enforced)
+  private readonly phaseConfig: Record<string, { members: string[], goal: string, deliverable: string }> = {
+    [Status.PF]: {
+      members: ['po'],
+      goal: "Analyze requirements, define the core value (Why), and triage the backlog.",
+      deliverable: "1-Pager Requirement Doc (Artifact) & Priority Report"
+    },
+    [Status.FBS]: {
+      members: ['dev'],
+      goal: "Assess technical feasibility, define architecture, and estimate effort.",
+      deliverable: "Technical Specification & Schema Design (Artifact)"
+    },
+    [Status.RFD]: {
+      members: ['ux'],
+      goal: "Design the user flow, wireframes, and define UX principles.",
+      deliverable: "UX Flowchart & Wireframe (Artifact)"
+    },
+    [Status.FBD]: {
+      members: ['ux', 'po'], // 기획+디자인 디테일 협의
+      goal: "Finalize visual design (UI) and component specifications.",
+      deliverable: "High-fidelity Design & Component Spec (Artifact)"
+    },
+    [Status.RFE_RFK]: {
+      members: ['po'],
+      goal: "Review all planning/design artifacts before development starts.",
+      deliverable: "Final Approval for Development (Go/No-Go Decision)"
+    },
+    [Status.FUE]: {
+      members: ['dev'],
+      goal: "Implement the feature based on approved specs.",
+      deliverable: "Working Code & Implementation Report"
+    },
+    [Status.RFQ]: {
+      members: ['dev'],
+      goal: "Perform self-testing and request QA.",
+      deliverable: "Unit Test Results & QA Request"
+    },
+    [Status.FUQ]: {
+      members: ['qa'],
+      goal: "Verify functionality against requirements and report bugs.",
+      deliverable: "Bug Report or QA Pass Certificate"
+    },
+    [Status.RFT]: {
+      members: ['qa', 'po'],
+      goal: "Review test results and decide on release readiness.",
+      deliverable: "Release Candidate (RC) Decision"
+    },
+    [Status.FUT]: {
+      members: ['dev'],
+      goal: "Fix critical bugs found during QA/UAT.",
+      deliverable: "Hotfix Patch & Verification"
+    },
+    [Status.FL]: {
+      members: ['po'], // 출시/배포
+      goal: "Deploy to production and announce release.",
+      deliverable: "Release Note & Deployment Confirmation"
+    }
   };
 
   /**
@@ -56,12 +101,17 @@ export class ManagerAgent {
             thought: '새로운 에픽이다. 기획부터 꼼꼼히 챙겨야지.',
             intent: 'START_PLANNING'
         });
-        return this.createSpawnAction('po', task, "백로그를 분석하고 우선순위를 보고하세요.");
+        // PF 시작 시 첫 타자(PO) 호출
+        const pfConfig = this.phaseConfig[Status.PF];
+        return this.createSpawnAction(pfConfig.members[0], task, "백로그를 분석하고 우선순위를 보고하세요.");
     }
 
-    // 2. 토론 루프
-    const requiredMembers = this.participants[currentStatus];
-    if (requiredMembers) {
+    // 2. 단계별 진행 (Strict Phase Management)
+    const phaseInfo = this.phaseConfig[currentStatus];
+    if (phaseInfo) {
+        const requiredMembers = phaseInfo.members;
+        
+        // 현재 발언자가 있다면 다음 순서 계산
         let nextIndex = 0;
         if (lastSpeaker && requiredMembers.includes(lastSpeaker)) {
             nextIndex = requiredMembers.indexOf(lastSpeaker) + 1;
@@ -70,8 +120,12 @@ export class ManagerAgent {
         if (nextIndex < requiredMembers.length) {
             const nextMember = requiredMembers[nextIndex];
             await this.logChronicle('MODERATION', `${currentStatus} 단계 진행을 위해 ${nextMember} 가재에게 발언권을 넘깁니다.`);
-            return this.createSpawnAction(nextMember, task, `현재 ${currentStatus} 단계입니다. 이전 내용을 바탕으로 의견을 제시하거나 작업을 수행하세요.`);
+            
+            // [중요] 다음 에이전트에게 미션 부여 (공정 목표 전달)
+            const instruction = `현재 ${currentStatus} 단계입니다. 당신의 목표는 '${phaseInfo.goal}'입니다. 산출물인 '${phaseInfo.deliverable}'을 작성하세요.`;
+            return this.createSpawnAction(nextMember, task, instruction);
         } else {
+            // 해당 단계의 모든 멤버가 발언함 -> CEO 승인 대기
             console.log(`   -> [완료] ${currentStatus} 단계 작업 완료. CEO 승인 대기.`);
             await this.logChronicle('MODERATION', `${currentStatus} 단계의 모든 작업이 완료되었습니다. CEO 승인을 기다립니다.`);
             return null; 
@@ -103,9 +157,11 @@ export class ManagerAgent {
           await docRef.update({ status: nextStatus, updated_at: new Date().toISOString() });
           await this.logChronicle('MODERATION', `단계 전이: ${task.status} -> ${nextStatus}`);
           
-          const nextMembers = this.participants[nextStatus];
-          if (nextMembers && nextMembers.length > 0) {
-              return this.createSpawnAction(nextMembers[0], { ...task, status: nextStatus }, "새로운 단계입니다. 작업을 시작하세요.");
+          const nextPhase = this.phaseConfig[nextStatus];
+          if (nextPhase && nextPhase.members.length > 0) {
+              const firstMember = nextPhase.members[0];
+              const instruction = `새로운 단계(${nextStatus})입니다. 목표: ${nextPhase.goal}. 산출물: ${nextPhase.deliverable}. 작업을 시작하세요.`;
+              return this.createSpawnAction(firstMember, { ...task, status: nextStatus }, instruction);
           }
       }
 
@@ -113,9 +169,20 @@ export class ManagerAgent {
   }
 
   private createSpawnAction(agentId: string, task: Task, instruction: string): AgentAction {
+      // Phase 정보 조회
+      const phaseInfo = this.phaseConfig[task.status];
+      const goalText = phaseInfo ? phaseInfo.goal : "Perform task";
+      const deliverableText = phaseInfo ? phaseInfo.deliverable : "Result";
+
       const systemInstruction = `
         [Role] ${agentId}
         [Context] Task: ${task.title} (Status: ${task.status})
+        
+        [PHASE OBJECTIVE]
+        - Current Phase: ${task.status}
+        - Goal: ${goalText}
+        - Required Deliverable: ${deliverableText}
+        
         [Instruction] ${instruction}
         
         [IMPORTANT: Output Format]

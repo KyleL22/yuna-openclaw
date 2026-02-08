@@ -14,6 +14,7 @@ async function main() {
   const argv = yargs(hideBin(process.argv))
     .option('taskId', { type: 'string' })
     .option('answer', { type: 'string' })
+    .option('lastSpeaker', { type: 'string' })
     .parseSync();
 
   const command = argv._[0] as string;
@@ -26,7 +27,8 @@ async function main() {
     const input: any = { 
         messages: command ? [command] : [],
         taskId: argv.taskId,
-        llmAnswer: argv.answer // [New] LLM 답변 주입
+        llmAnswer: argv.answer, // [New] LLM 답변 주입
+        lastSpeaker: argv.lastSpeaker // [New] 이전 발언자 주입
     };
 
     const result = await graph.invoke(input);
