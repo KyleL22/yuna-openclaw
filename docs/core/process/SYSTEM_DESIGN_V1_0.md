@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.8 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v14.0 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
@@ -49,10 +49,10 @@ graph TD
 | :--- | :--- | :--- | :--- |
 | `main` (biseo) | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신, `gajae-os` 구동 |
 | `pm` | **매니저가재** | 공정 관리 (Manager) | 스케줄링 및 공정 통제 |
-| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성 |
+| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성, 토론 주도 |
 | `ba` | **분석가재** | 분석 (Business Analyst) | 요구사항 분석 |
 | `ux` | **디자인가재** | 디자인 (UX/UI Designer) | 디자인 가이드 작성 |
-| `dev` | **개발가재** | 개발 (Developer) | 코드 구현 |
+| `dev` | **개발가재** | 개발 (Developer) | 코드 구현, 기술 검토(Reviewer) |
 | `qa` | **품질가재** | 품질 (Quality Assurance) | 테스트 수행 |
 | `hr` | **인사가재** | 인사 (HR Manager) | 리소스 관리 |
 | `mkt` | **마케팅가재** | 마케팅 (Marketer) | 카피라이팅 |
@@ -197,20 +197,24 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> INBOX
-    INBOX --> BACKLOG : Triage by PO (Project/Epic Classification)
-    BACKLOG --> PF : Scheduled by PM (Priority Check)
+    INBOX --> BACKLOG : Triage by PO
+    BACKLOG --> PF : Scheduled by PM
 
-    state "Planning Phase (Parallel)" as Planning {
-        PF --> FBS : PO Defined Requirements
-        FBS --> RFD : DEV Feasibility Check
-        RFD --> FBD : UX Design Complete
+    state "Planning Phase" as Planning {
+        PF --> Discussion_PF
+        state Discussion_PF {
+             PO --> DEV : Feasibility Check
+             DEV --> UX : Design Constraint
+             UX --> PO : User Scenario
+        }
+        Discussion_PF --> FBD : Consensus Reached
         FBD --> RFE_RFK : Design Approved (CEO Gate)
     }
 
-    state "Execution Phase (Serial)" as Execution {
+    state "Execution Phase" as Execution {
         RFE_RFK --> FUE : Eng Kick-off
         FUE --> RFQ : Implementation Done
-        RFQ --> FUQ : QA Start
+        RFQ --> FUQ
         FUQ --> RFT : QA Passed (CEO Gate)
         RFT --> FUT : Staging Deploy
         FUT --> FL : Final Launch (CEO Gate)
@@ -219,29 +223,50 @@ stateDiagram-v2
     FL --> [*]
 ```
 
-**[Kinetic 13 Protocol Details]**
-*   **PF (Planning First):** 기획가재(PO)가 요구사항 정의.
-*   **FBS (Feasibility Study):** 개발가재(DEV)가 기술 검토.
-*   **RFD (Request for Design):** 디자인가재(UX) 호출.
-*   **FBD (Finalize by Design):** 디자인 완료 및 CEO 승인.
-*   **RFE_RFK (Request for Eng Kickoff):** 개발 착수 승인 (Gate).
-*   **FUE (Feature Under Eng):** 개발가재(DEV) 구현.
-*   **RFQ (Request for QA):** 구현 완료, 품질가재(QA) 호출.
-*   **FUQ (Feature Under QA):** 테스트 진행.
-*   **RFT (Request for Test):** QA 통과 보고 및 CEO 승인 (Gate).
-*   **FUT (Feature Under Test):** 스테이징 배포 및 최종 확인.
-*   **FL (Feature Launch):** 라이브 배포.
+### 3.4 토론 및 합의 프로토콜 (Discussion & Consensus Protocol)
+가재들은 단순히 지시를 따르는 것이 아니라, 각자의 전문성을 바탕으로 치열하게 **토론(Discussion)**하고 **상호 검증(Critique)**합니다.
 
-*   **CEO Super Pass:** CEO 명령 시 특정 단계 건너뛰기(Skip) 및 강제 전이 가능.
+```mermaid
+sequenceDiagram
+    participant PM as 매니저가재
+    participant PO as 기획가재
+    participant DEV as 개발가재
+    participant UX as 디자인가재
+    participant DB as Firestore (Chronicle)
 
-### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
+    PM->>PO: "로그인 기능 기획해" (Task Assign)
+    PO->>DB: [Plan] "JWT 토큰 방식 로그인 기획서(Draft)"
+    
+    loop Discussion Loop (치열한 토론)
+        PM->>DEV: "PO 기획서 기술 검토해" (Spawn Reviewer)
+        DEV->>DB: [Critique] "보안상 Refresh Token 저장소 수정 필요함" (Reject)
+        
+        PM->>PO: "DEV 의견 반영해" (Spawn Author)
+        PO->>DB: [Revise] "HttpOnly 쿠키 저장 방식으로 수정함" (Update)
+        
+        PM->>UX: "UX 검토해" (Spawn Reviewer)
+        UX->>DB: [Critique] "로그인 실패 시 에러 메시지 너무 딱딱함" (Reject)
+        
+        PO->>DB: [Revise] "에러 메시지 톤앤매너 수정함" (Update)
+    end
+    
+    PM->>PO: "더 이상 이견 없지?" (Check Consensus)
+    PO-->>PM: "넵, 합의 완료되었습니다." (Consensus)
+    PM->>DB: [State Transition] PF -> FBD
+```
+
+*   **Critique (비평):** 다음 단계로 넘어가기 전, 관련 전문가(Reviewer)가 반드시 결과물을 비평한다.
+*   **Revise (수정):** 비평이 있으면 원작자(Author)는 결과물을 수정해야 한다.
+*   **Consensus (합의):** 모든 Reviewer가 `APPROVE`를 낼 때까지 루프를 돈다.
+
+### 3.5 뇌 부활 및 재동기화 (Resync Protocol)
 *   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
 *   **Wake Up (1년 뒤):**
     1.  DB에서 `context_snapshot` 로드.
     2.  현재 파일 시스템과 비교(Diff).
     3.  변경된 환경에 맞춰 상태(State) 보정 후 재개.
 
-### 3.5 아티팩트 관리 (Dual Storage)
+### 3.6 아티팩트 관리 (Dual Storage)
 *   **원본:** Git 저장소 (`docs/epics/...`)에 마크다운으로 저장.
 *   **인덱스:** Firestore에 해당 파일의 링크 저장.
 *   **보고:** 비서가재가 DB 조회 후 "여기 있습니다" 하고 링크 제공.
