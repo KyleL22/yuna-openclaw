@@ -1,67 +1,61 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v14.1 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v14.2 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
-**[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
+**[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **Main Agent(Host)**가 **비서가재(Biseo)** 및 가재 군단을 오케스트레이션합니다. 비용 절감을 위해 모든 지능적 판단은 **Main Agent의 뇌**를 활용합니다.
 
 ---
 
 ## 1. 런타임 아키텍처 (Runtime Architecture)
 
 **[물리적 환경]**: Mac (PC) + Telegram Bridge + Firestore Database.
-**[코드베이스]**: `gajae-os` (TypeScript + LangGraph.js) -> **Orchestration Engine**
+**[코드베이스]**: `gajae-os` (TypeScript + LangGraph.js) -> **Logic Engine**
 
 ```mermaid
 graph TD
     User["👤 CEO (Telegram)"] -->|Message| Bridge["🌉 Telegram Bot API"]
-    Bridge -->|Webhook| Main["🖥️ 비서가재 (Main Agent)"]
+    Bridge -->|Webhook| Main["🖥️ Main Agent (OS Host)"]
     
     subgraph "Local Workspace"
         OS["⚙️ gajae-os (CLI)"]
         DB[("🔥 Firestore (Memory)")]
     end
     
-    subgraph "Star Topology (Centralized)"
-        PM["👔 Manager (Moderator)"]
+    subgraph "Workers (Micro-Agents)"
+        Biseo["🦞 Biseo (Gatekeeper)"]
+        PM["👔 Manager"]
         PO["💡 PO"]
         DEV["💻 Dev"]
-        UX["🎨 UX"]
-        QA["🧪 QA"]
         ETC["..."]
     end
 
     Main -->|Exec CLI| OS
-    OS -->|Read/Write| DB
-    OS -- "Return Action" --> Main
+    OS -- "ASK_LLM" --> Main
+    Main -- "Answer" --> OS
+    OS -- "SPAWN_AGENT" --> Main
     
+    Main -- "Spawn" --> Biseo
     Main -- "Spawn" --> PM
-    PM -- "Call (Turn)" --> PO
-    PM -- "Call (Turn)" --> DEV
-    PM -- "Call (Turn)" --> UX
+    Main -- "Spawn" --> PO
     
     %% All agents write to DB
-    Main -.->|"[CEO_COMMAND]"| DB
-    PM -.->|"[MODERATION] / [DECISION]"| DB
-    PO -.->|"[OPINION]"| DB
-    DEV -.->|"[CRITIQUE]"| DB
-    UX -.->|"[DESIGN]"| DB
+    Biseo -.->|"[CEO_COMMAND]"| DB
+    PM -.->|"[DECISION]"| DB
+    PO -.->|"[PLAN]"| DB
+    OS -.->|"[PROCESS_STATE]"| DB
 ```
 
 ### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Micro-Agents)
-**[Concept]**: 12명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. `gajae-os`는 이들을 직접 실행하는 게 아니라, **`Action Plan`을 반환하여 Main Agent가 실행하게** 합니다.
+**[Concept]**: **Main Agent(시스템 관리자)** 하위에 11명의 전문 가재들이 존재합니다.
 
 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
-| `main` (biseo) | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신, `gajae-os` 구동 |
-| `pm` | **매니저가재** | 공정 관리 (Manager) | **능동적 사회자(Active Moderator)** |
-| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성, 토론 발제 |
-| `ba` | **분석가재** | 분석 (Business Analyst) | 요구사항 분석 |
-| `ux` | **디자인가재** | 디자인 (UX/UI Designer) | 디자인 가이드 작성 |
-| `dev` | **개발가재** | 개발 (Developer) | 코드 구현, 기술 검토 |
-| `qa` | **품질가재** | 품질 (Quality Assurance) | 테스트 수행 |
-| `hr` | **인사가재** | 인사 (HR Manager) | 리소스 관리 |
-| `mkt` | **마케팅가재** | 마케팅 (Marketer) | 카피라이팅 |
-| `legal` | **변호사가재** | 법무 (Legal Advisor) | 라이선스 검토 |
-| `cs` | **민원가재** | 고객지원 (CS Specialist) | 응대 매뉴얼 작성 |
+| `main` | **가재 OS** | 시스템 호스트 | CLI 실행, LLM 판단 대행, Spawn 실행 |
+| `biseo` | **비서가재** | 문지기 | CEO 명령 수신, `INBOX` 생성 |
+| `pm` | **매니저가재** | 공정 관리 | 스케줄링, 토론 주재 |
+| `po` | **기획가재** | 기획 | 기획서 작성 |
+| `dev` | **개발가재** | 개발 | 코드 구현 |
+| `qa` | **품질가재** | 품질 | 테스트 |
+| ... | (기타) | ... | (BA, UX, HR, MKT, LEGAL, CS) |
 
 ---
 
@@ -139,7 +133,6 @@ classDiagram
         AGENT_RESPONSE (💬)
         INTENT (❗️)
         EMOTION (❤️)
-        MODERATION (⚖️)
     }
 
     Project "1" *-- "many" Epic : Contains
@@ -178,7 +171,7 @@ classDiagram
 
 #### E. `/chronicles/{runId}/entries/{entryId}` (Logs)
 *   `speaker_id`: 발화자 (biseo, pm, dev...)
-*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️), `MODERATION`(⚖️)
+*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️)
 *   `content`: 마크다운 내용
 *   `metadata`: 상세 정보 (숨김 처리 가능)
 
@@ -187,96 +180,30 @@ classDiagram
 ## 3. 핵심 메커니즘 (Core Mechanisms)
 
 ### 3.1 비서가재 & 매니저가재 프로토콜 (The Executive Loop)
-1.  **발화:** CEO "이거 하자" -> 비서가재가 `INBOX` 상태로 Task 생성.
+1.  **발화:** CEO "이거 하자" -> `main`이 `biseo`에게 전달.
 2.  **분류 (Triage):** 기획가재(PO)가 `INBOX`를 주기적으로 검토하여 `Project/Epic` 분류.
 3.  **계획 (Scheduling):** 매니저가재(PM)가 분류된 Task의 우선순위를 보고 `BACKLOG` -> `PF(착수)`로 상태 변경.
 4.  **긴급 대응:** CEO가 "긴급!" 선언 시, 비서가재가 즉시 `URGENT Epic` 생성 후 매니저가재 호출 -> 강제 인터럽트 발동.
 
-### 3.2 Action Planner Pattern (Orchestration)
-*   **Engine (`gajae-os` CLI):** 상태 머신(LangGraph)을 돌리고 **`AgentAction` (JSON)**을 반환.
-*   **Main Agent (`biseo`):** CLI의 출력을 파싱하여 **`openclaw.spawn(agentId)`**를 실제로 실행.
-*   **Context Injection:** 깨울 때 해당 에이전트의 `RoleReport` (과거 요약)와 `Current Task Info`를 주입하여 실행.
+### 3.2 LLM Delegation Protocol (Brain Sharing)
+*   **Problem:** `gajae-os` (로컬 Node)에서 LLM API를 직접 호출하면 비용 발생.
+*   **Solution:** `gajae-os`가 판단이 필요할 때 `ASK_LLM` 액션을 반환.
+*   **Execution:** `main` Agent(이미 LLM임)가 이 요청을 보고 생각한 뒤, 답을 가지고 `gajae-os`를 다시 실행.
+    *   `Manager` -> `ASK_LLM("다음은 누구?")` -> `Main` -> `gajae-os("PO 불러")` -> `SPAWN_AGENT("PO")`.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
+*   각 공정(Step)의 끝에는 **"CEO 승인(Human-in-the-loop)"** 단계가 필수.
+*   담당 가재가 "완료 보고"를 올리면 -> 비서가재가 CEO에게 알림 -> CEO 승인 시 다음 단계로 전이.
+*   **CEO Super Pass:** CEO 명령 시 특정 단계 건너뛰기(Skip) 및 강제 전이 가능.
 
-```mermaid
-stateDiagram-v2
-    [*] --> INBOX
-    INBOX --> BACKLOG : Triage by PO
-    BACKLOG --> PF : Scheduled by PM
-
-    state "Planning Phase" as Planning {
-        PF --> Discussion_PF
-        state Discussion_PF {
-             [*] --> Moderation
-             Moderation --> PO : Call PO
-             Moderation --> DEV : Call DEV
-             Moderation --> UX : Call UX
-             PO --> Moderation : Opinion
-             DEV --> Moderation : Critique
-             UX --> Moderation : Design
-        }
-        Discussion_PF --> FBD : Consensus Reached (PM Decision)
-        FBD --> RFE_RFK : Design Approved (CEO Gate)
-    }
-
-    state "Execution Phase" as Execution {
-        RFE_RFK --> FUE
-        FUE --> RFQ
-        RFQ --> FUQ
-        FUQ --> RFT : QA Passed (CEO Gate)
-        RFT --> FUT
-        FUT --> FL : Final Launch (CEO Gate)
-    }
-    
-    FL --> [*]
-```
-
-### 3.4 능동적 토론 및 합의 프로토콜 (Active Discussion Protocol)
-**매니저가재(PM)**는 수동적인 사회자가 아닙니다. 상황을 판단하여 필요한 가재를 **강제 소환(Call-out)**하고, 토론을 **주도(Lead)**합니다.
-
-```mermaid
-sequenceDiagram
-    participant PM as 매니저가재
-    participant PO as 기획가재
-    participant DEV as 개발가재
-    participant UX as 디자인가재
-    participant DB as Firestore (Chronicle)
-
-    PM->>PO: "로그인 기능 기획해" (Task Assign)
-    PO->>DB: [Plan] "JWT 토큰 방식 로그인 기획서(Draft)"
-    
-    loop Discussion Loop (PM Moderation)
-        PM->>PM: "기획서가 나왔군. 기술적 검토가 필요해." (Think)
-        PM->>DEV: "PO 기획서 기술 검토해. 보안 이슈 없나?" (Proactive Call)
-        DEV->>DB: [Critique] "Refresh Token 저장소 문제 있음" (Reject)
-        
-        PM->>PM: "디자인 관점에서도 봐야겠어." (Think)
-        PM->>UX: "UX 검토해. 사용자 흐름 괜찮아?" (Proactive Call)
-        UX->>DB: [Critique] "에러 메시지가 너무 딱딱함" (Reject)
-        
-        PM->>PO: "DEV랑 UX 의견 반영해서 수정해." (Order)
-        PO->>DB: [Revise] "지적사항 반영 완료" (Update)
-        
-        PM->>PM: "더 빠진 거 없나? QA 의견도 들어볼까?" (Active Check)
-    end
-    
-    PM->>PM: "모두 동의했군."
-    PM->>DB: [State Transition] PF -> FBD (Consensus Declared)
-```
-
-*   **Role Comprehension:** PM은 각 가재의 역할(`SystemRole`)을 이해하고, 적재적소에 질문을 던진다.
-*   **Proactive Prompting:** 조용한 가재에게도 의견을 묻는다. ("QA가재, 테스트 관점에서 문제없어?")
-*   **Consensus Check:** 모든 쟁점이 해결되었는지 확인 후 `DONE` 선언.
-
-### 3.5 뇌 부활 및 재동기화 (Resync Protocol)
-*   **Sleep:** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
+### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
+*   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
 *   **Wake Up (1년 뒤):**
     1.  DB에서 `context_snapshot` 로드.
     2.  현재 파일 시스템과 비교(Diff).
     3.  변경된 환경에 맞춰 상태(State) 보정 후 재개.
 
-### 3.6 아티팩트 관리 (Dual Storage)
+### 3.5 아티팩트 관리 (Dual Storage)
 *   **원본:** Git 저장소 (`docs/epics/...`)에 마크다운으로 저장.
 *   **인덱스:** Firestore에 해당 파일의 링크 저장.
 *   **보고:** 비서가재가 DB 조회 후 "여기 있습니다" 하고 링크 제공.
@@ -308,7 +235,7 @@ docs/
 *   **Language:** TypeScript (Node.js)
 *   **Orchestration:** LangGraph.js
 *   **Storage:** Firestore (Data/Queue) + Local Git (Docs/Code)
-*   **Runtime:** OpenClaw Multi-Agent System (11 Agents)
+*   **Brain:** Main Agent (OpenClaw) Delegation
 
 ---
 

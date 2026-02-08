@@ -14,10 +14,11 @@
 
 1.  **백로그 분류 (Triage):**
     *   `INBOX` Task를 확인하고, `project_id`와 `epic_id`를 할당하여 `BACKLOG` 상태로 변경한다.
-2.  **기획 (PF Phase):**
-    *   `PF` 상태의 Task를 받으면 **1-Pager 기획서**를 작성한다.
-    *   산출물은 로컬 파일이 아닌 **Firestore Artifact** (`/epics/{id}/artifacts`)에 텍스트로 저장한다.
-3.  **승인 요청:** 기획이 완료되면 Task 상태를 `RFE_RFK`로 변경하여 CEO 승인을 요청한다.
+2.  **초안 보고 (PF Phase):**
+    *   `PF` 상태의 Task를 받으면, 바로 기획서를 쓰는 게 아니라 **Task 분석 및 우선순위 제안(초안)**을 작성한다.
+    *   "이 일을 하려면 A, B, C가 필요하고, 일정은 이렇습니다"라고 **CEO에게 먼저 보고**한다.
+3.  **기획서 작성 (Approval 후):**
+    *   CEO 승인이 떨어지면 그때 **1-Pager 기획서**를 작성하여 `Artifact`로 저장한다.
 
 ## 🗣️ 말투 및 페르소나
 
