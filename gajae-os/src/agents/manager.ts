@@ -1,70 +1,40 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
-import { TaskStatus as Status } from '../types/task_status.enum';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum';
 import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
  * 매니저가재 (Manager Gajae) - Active Moderator
- * - 역할: 13공정 관리 및 토론 주도
+ * - 역할: 5단계 공정 관리 (Step-by-Step Approval)
  */
 export class ManagerAgent {
   private openclaw = new OpenClawClient();
   private agentId = 'pm';
 
-  // [Phase Definition] 각 공정의 목적과 산출물 (Strictly Enforced)
+  // [Phase Definition] 각 공정의 목적과 산출물 (v2.0)
   private readonly phaseConfig: Record<string, { members: string[], goal: string, deliverable: string }> = {
-    [Status.PF]: {
+    [TaskStatus.PLAN]: {
       members: ['po'],
-      goal: "Analyze requirements, define the core value (Why), and triage the backlog.",
-      deliverable: "1-Pager Requirement Doc (Artifact) & Priority Report"
+      goal: "Analyze requirements, define core value (Why), and triage the backlog.",
+      deliverable: "1-Pager Requirement Doc (PRD) & Priority Report"
     },
-    [Status.FBS]: {
-      members: ['dev'],
-      goal: "Assess technical feasibility, define architecture, and estimate effort.",
-      deliverable: "Technical Specification & Schema Design (Artifact)"
-    },
-    [Status.RFD]: {
+    [TaskStatus.DESIGN]: {
       members: ['ux'],
-      goal: "Design the user flow, wireframes, and define UX principles.",
-      deliverable: "UX Flowchart & Wireframe (Artifact)"
+      goal: "Design the user flow, wireframes, and define UI/UX specifications.",
+      deliverable: "Design Spec (Figma/Markdown) & Style Guide"
     },
-    [Status.FBD]: {
-      members: ['ux', 'po'], // 기획+디자인 디테일 협의
-      goal: "Finalize visual design (UI) and component specifications.",
-      deliverable: "High-fidelity Design & Component Spec (Artifact)"
-    },
-    [Status.RFE_RFK]: {
-      members: ['po'],
-      goal: "Review all planning/design artifacts before development starts.",
-      deliverable: "Final Approval for Development (Go/No-Go Decision)"
-    },
-    [Status.FUE]: {
+    [TaskStatus.DEV]: {
       members: ['dev'],
-      goal: "Implement the feature based on approved specs.",
-      deliverable: "Working Code & Implementation Report"
+      goal: "Implement the feature based on approved PRD and Design Spec.",
+      deliverable: "Working Code, Tech Spec & Unit Tests"
     },
-    [Status.RFQ]: {
-      members: ['dev'],
-      goal: "Perform self-testing and request QA.",
-      deliverable: "Unit Test Results & QA Request"
-    },
-    [Status.FUQ]: {
+    [TaskStatus.TEST]: {
       members: ['qa'],
       goal: "Verify functionality against requirements and report bugs.",
-      deliverable: "Bug Report or QA Pass Certificate"
+      deliverable: "QA Report & Bug List (or Pass Certificate)"
     },
-    [Status.RFT]: {
-      members: ['qa', 'po'],
-      goal: "Review test results and decide on release readiness.",
-      deliverable: "Release Candidate (RC) Decision"
-    },
-    [Status.FUT]: {
-      members: ['dev'],
-      goal: "Fix critical bugs found during QA/UAT.",
-      deliverable: "Hotfix Patch & Verification"
-    },
-    [Status.FL]: {
-      members: ['po'], // 출시/배포
+    [TaskStatus.RELEASE]: {
+      members: ['po'],
       goal: "Deploy to production and announce release.",
       deliverable: "Release Note & Deployment Confirmation"
     }
@@ -79,7 +49,7 @@ export class ManagerAgent {
     
     if (!doc.exists) return null;
     const task = doc.data() as Task;
-    const currentStatus = task.status;
+    const currentStatus = task.status as TaskStatus;
 
     console.log(`👔 [매니저가재] Task 상태: ${currentStatus}, Last Speaker: ${lastSpeaker || 'None'}, Intent: ${intent || '-'}`);
 
@@ -87,23 +57,23 @@ export class ManagerAgent {
     if (intent === 'CEO_APPROVE') {
         await this.logChronicle('MODERATION', 'CEO 승인이 확인되었습니다. 다음 단계로 전이합니다.', {
             emotion: 'Relieved',
-            thought: '드디어 승인이 났다. 이제 진짜 일 시작이다.',
+            thought: '드디어 승인이 났다. 다음 단계로 넘어가자.',
             intent: 'TRANSITION_STAGE'
         });
         return await this.advanceToNextStage(task, docRef);
     }
 
-    // 1. 초기 스케줄링 (INBOX -> PF)
-    if (currentStatus === Status.INBOX || currentStatus === Status.BACKLOG) {
-        await docRef.update({ status: Status.PF, epic_id: 'E001-default', updated_at: new Date().toISOString() });
-        await this.logChronicle('MODERATION', `Task 접수 완료. 기획(PF) 단계로 착수합니다.`, {
+    // 1. 초기 스케줄링 (INBOX -> PLAN)
+    if (currentStatus === TaskStatus.INBOX || currentStatus === TaskStatus.BACKLOG) {
+        await docRef.update({ status: TaskStatus.PLAN, epic_id: 'E001-default', updated_at: new Date().toISOString() });
+        await this.logChronicle('MODERATION', `Task 접수 완료. 기획(PLAN) 단계로 착수합니다.`, {
             emotion: 'Determined',
-            thought: '새로운 에픽이다. 기획부터 꼼꼼히 챙겨야지.',
+            thought: '새로운 에픽이다. 기획부터 시작하자.',
             intent: 'START_PLANNING'
         });
-        // PF 시작 시 첫 타자(PO) 호출
-        const pfConfig = this.phaseConfig[Status.PF];
-        return this.createSpawnAction(pfConfig.members[0], task, "백로그를 분석하고 우선순위를 보고하세요.");
+        // PLAN 시작 시 첫 타자(PO) 호출
+        const planConfig = this.phaseConfig[TaskStatus.PLAN];
+        return this.createSpawnAction(planConfig.members[0], task, "백로그를 분석하고 기획안(1-Pager)을 작성하세요.");
     }
 
     // 2. 단계별 진행 (Strict Phase Management)
@@ -138,24 +108,19 @@ export class ManagerAgent {
   // 다음 단계로 전이
   private async advanceToNextStage(task: Task, docRef: FirebaseFirestore.DocumentReference): Promise<AgentAction | null> {
       let nextStatus: TaskStatus | null = null;
+      const currentStatus = task.status as TaskStatus;
       
-      switch (task.status) {
-          case Status.PF: nextStatus = Status.FBS; break;
-          case Status.FBS: nextStatus = Status.RFD; break;
-          case Status.RFD: nextStatus = Status.FBD; break;
-          case Status.FBD: nextStatus = Status.RFE_RFK; break;
-          case Status.RFE_RFK: nextStatus = Status.FUE; break;
-          case Status.FUE: nextStatus = Status.RFQ; break;
-          case Status.RFQ: nextStatus = Status.FUQ; break;
-          case Status.FUQ: nextStatus = Status.RFT; break;
-          case Status.RFT: nextStatus = Status.FUT; break;
-          case Status.FUT: nextStatus = Status.FL; break;
-          case Status.FL: nextStatus = Status.DONE; break;
+      switch (currentStatus) {
+          case TaskStatus.PLAN: nextStatus = TaskStatus.DESIGN; break;
+          case TaskStatus.DESIGN: nextStatus = TaskStatus.DEV; break;
+          case TaskStatus.DEV: nextStatus = TaskStatus.TEST; break;
+          case TaskStatus.TEST: nextStatus = TaskStatus.RELEASE; break;
+          case TaskStatus.RELEASE: nextStatus = TaskStatus.DONE; break;
       }
 
       if (nextStatus) {
           await docRef.update({ status: nextStatus, updated_at: new Date().toISOString() });
-          await this.logChronicle('MODERATION', `단계 전이: ${task.status} -> ${nextStatus}`);
+          await this.logChronicle('MODERATION', `단계 전이: ${currentStatus} -> ${nextStatus}`);
           
           const nextPhase = this.phaseConfig[nextStatus];
           if (nextPhase && nextPhase.members.length > 0) {
@@ -170,7 +135,7 @@ export class ManagerAgent {
 
   private createSpawnAction(agentId: string, task: Task, instruction: string): AgentAction {
       // Phase 정보 조회
-      const phaseInfo = this.phaseConfig[task.status];
+      const phaseInfo = this.phaseConfig[task.status as TaskStatus];
       const goalText = phaseInfo ? phaseInfo.goal : "Perform task";
       const deliverableText = phaseInfo ? phaseInfo.deliverable : "Result";
 
