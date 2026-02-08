@@ -12,6 +12,7 @@ export interface GraphState {
   intent?: 'WORK' | 'CASUAL';
   taskId?: string;
   lastSpeaker?: string;
+  nextSpeaker?: string; // [Fix] 필드 추가
   actions?: AgentAction[];
   finalResponse?: string;
 }
@@ -51,42 +52,40 @@ const prepareNode = async (state: GraphState) => {
 const managerNode = async (state: GraphState) => {
     if (!state.taskId) return {};
 
+    // lastSpeaker는 이전 턴의 workerNode에서 갱신됨
     const action = await manager.processTask(state.taskId, state.lastSpeaker);
     
     if (!action) {
         return { finalResponse: "모든 공정 처리가 완료되었습니다." }; 
     }
 
-    // 매니저가 'SPAWN_AGENT' 액션을 리턴하면 -> nextSpeaker로 설정
     console.log(`👔 [Graph] 매니저 결정: ${action.agentId} 호출`);
     
-    // *주의* 매니저의 Action(Spawn 요청)은 그 자체로 의미가 있지만,
-    // workflow 상에서는 '다음 노드(workerNode)'에게 '누굴 실행할지' 알려주는 용도로 쓰임.
-    // 여기서는 actions 배열에 추가하지 않고 nextSpeaker만 넘길 수도 있지만,
-    // 기록을 위해 actions에도 추가함.
-    return { actions: [action], nextSpeaker: action.agentId }; // state에 nextSpeaker 필드 추가 필요 (임시로 actions[last] 활용)
+    // nextSpeaker 설정 -> workerNode가 이걸 보고 실행함
+    return { actions: [action], nextSpeaker: action.agentId }; 
 };
 
 // [Node 5] 워커 실행 (Unified Worker Node)
 const workerNode = async (state: GraphState) => {
-    const lastAction = state.actions?.[state.actions.length - 1];
-    if (!lastAction || lastAction.type !== 'SPAWN_AGENT') return {};
+    // managerNode가 설정한 nextSpeaker를 가져옴
+    const agentId = state.nextSpeaker; 
+    
+    if (!agentId) {
+        console.warn(`⚠️ [Graph] Worker Node 진입했으나 실행할 에이전트 ID가 없습니다.`);
+        return {};
+    }
 
-    const agentId = lastAction.agentId;
     console.log(`👷 [Graph] Worker Node 진입: ${agentId} 실행`);
 
     const agent = agents[agentId];
     if (agent) {
-        // 1. Agent Logic 실행 (내부적으로 Spawn 요청 생성)
+        // Agent Logic 실행
         const action = await agent.processTask(state.taskId);
         
-        // 2. 결과 처리
-        // 여기서 반환된 action은 '나(Agent)를 Spawn 해줘!'라는 요청임.
-        // 실제 런타임(Main Agent)에서는 이 action을 보고 sessions_spawn을 호출함.
-        // 지금은 '실행 완료됨'으로 간주하고 루프를 돌리기 위해 lastSpeaker 갱신.
-        
+        // 실행 완료 후, 해당 에이전트를 'lastSpeaker'로 설정하여 매니저에게 보고
+        // (actions에 추가하는 건 선택사항, 이미 manager가 추가했으면 중복일 수 있음)
         return { 
-            actions: action ? [action] : [], 
+            // actions: action ? [action] : [], // 중복 방지를 위해 생략 가능하나, 에이전트 내부 로직상 필요하다면 유지
             lastSpeaker: agentId 
         };
     } else {
@@ -102,6 +101,7 @@ const builder = new StateGraph<GraphState>({
     intent: { reducer: (a, b) => b ?? a, default: () => undefined },
     taskId: { reducer: (a, b) => b ?? a, default: () => undefined },
     lastSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined },
+    nextSpeaker: { reducer: (a, b) => b ?? a, default: () => undefined }, // [Fix] Reducer 추가
     actions: { reducer: (a, b) => (a ?? []).concat(b ?? []), default: () => [] },
     finalResponse: { reducer: (a, b) => b ?? a, default: () => undefined },
   }
