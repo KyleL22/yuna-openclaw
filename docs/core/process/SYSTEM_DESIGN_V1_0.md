@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v14.0 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v14.1 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
@@ -20,26 +20,30 @@ graph TD
         DB[("🔥 Firestore (Memory)")]
     end
     
-    subgraph "Workers (Micro-Agents)"
-        PM["👔 Manager"]
+    subgraph "Star Topology (Centralized)"
+        PM["👔 Manager (Moderator)"]
         PO["💡 PO"]
         DEV["💻 Dev"]
+        UX["🎨 UX"]
         QA["🧪 QA"]
+        ETC["..."]
     end
 
     Main -->|Exec CLI| OS
     OS -->|Read/Write| DB
     OS -- "Return Action" --> Main
+    
     Main -- "Spawn" --> PM
-    Main -- "Spawn" --> PO
-    Main -- "Spawn" --> DEV
+    PM -- "Call (Turn)" --> PO
+    PM -- "Call (Turn)" --> DEV
+    PM -- "Call (Turn)" --> UX
     
     %% All agents write to DB
     Main -.->|"[CEO_COMMAND]"| DB
-    OS -.->|"[PROCESS_STATE]"| DB
-    PM -.->|"[DECISION]"| DB
-    PO -.->|"[PLAN]"| DB
-    DEV -.->|"[CODE]"| DB
+    PM -.->|"[MODERATION] / [DECISION]"| DB
+    PO -.->|"[OPINION]"| DB
+    DEV -.->|"[CRITIQUE]"| DB
+    UX -.->|"[DESIGN]"| DB
 ```
 
 ### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Micro-Agents)
@@ -48,11 +52,11 @@ graph TD
 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
 | `main` (biseo) | **비서가재** | 문지기 (Gatekeeper) | CEO 명령 수신, `gajae-os` 구동 |
-| `pm` | **매니저가재** | 공정 관리 (Manager) | 스케줄링 및 공정 통제 |
-| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성, 토론 주도 |
+| `pm` | **매니저가재** | 공정 관리 (Manager) | **능동적 사회자(Active Moderator)** |
+| `po` | **기획가재** | 기획 (Product Owner) | 기획서 작성, 토론 발제 |
 | `ba` | **분석가재** | 분석 (Business Analyst) | 요구사항 분석 |
 | `ux` | **디자인가재** | 디자인 (UX/UI Designer) | 디자인 가이드 작성 |
-| `dev` | **개발가재** | 개발 (Developer) | 코드 구현, 기술 검토(Reviewer) |
+| `dev` | **개발가재** | 개발 (Developer) | 코드 구현, 기술 검토 |
 | `qa` | **품질가재** | 품질 (Quality Assurance) | 테스트 수행 |
 | `hr` | **인사가재** | 인사 (HR Manager) | 리소스 관리 |
 | `mkt` | **마케팅가재** | 마케팅 (Marketer) | 카피라이팅 |
@@ -135,6 +139,7 @@ classDiagram
         AGENT_RESPONSE (💬)
         INTENT (❗️)
         EMOTION (❤️)
+        MODERATION (⚖️)
     }
 
     Project "1" *-- "many" Epic : Contains
@@ -173,7 +178,7 @@ classDiagram
 
 #### E. `/chronicles/{runId}/entries/{entryId}` (Logs)
 *   `speaker_id`: 발화자 (biseo, pm, dev...)
-*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️)
+*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️), `MODERATION`(⚖️)
 *   `content`: 마크다운 내용
 *   `metadata`: 상세 정보 (숨김 처리 가능)
 
@@ -203,28 +208,32 @@ stateDiagram-v2
     state "Planning Phase" as Planning {
         PF --> Discussion_PF
         state Discussion_PF {
-             PO --> DEV : Feasibility Check
-             DEV --> UX : Design Constraint
-             UX --> PO : User Scenario
+             [*] --> Moderation
+             Moderation --> PO : Call PO
+             Moderation --> DEV : Call DEV
+             Moderation --> UX : Call UX
+             PO --> Moderation : Opinion
+             DEV --> Moderation : Critique
+             UX --> Moderation : Design
         }
-        Discussion_PF --> FBD : Consensus Reached
+        Discussion_PF --> FBD : Consensus Reached (PM Decision)
         FBD --> RFE_RFK : Design Approved (CEO Gate)
     }
 
     state "Execution Phase" as Execution {
-        RFE_RFK --> FUE : Eng Kick-off
-        FUE --> RFQ : Implementation Done
+        RFE_RFK --> FUE
+        FUE --> RFQ
         RFQ --> FUQ
         FUQ --> RFT : QA Passed (CEO Gate)
-        RFT --> FUT : Staging Deploy
+        RFT --> FUT
         FUT --> FL : Final Launch (CEO Gate)
     }
     
     FL --> [*]
 ```
 
-### 3.4 토론 및 합의 프로토콜 (Discussion & Consensus Protocol)
-가재들은 단순히 지시를 따르는 것이 아니라, 각자의 전문성을 바탕으로 치열하게 **토론(Discussion)**하고 **상호 검증(Critique)**합니다.
+### 3.4 능동적 토론 및 합의 프로토콜 (Active Discussion Protocol)
+**매니저가재(PM)**는 수동적인 사회자가 아닙니다. 상황을 판단하여 필요한 가재를 **강제 소환(Call-out)**하고, 토론을 **주도(Lead)**합니다.
 
 ```mermaid
 sequenceDiagram
@@ -237,30 +246,31 @@ sequenceDiagram
     PM->>PO: "로그인 기능 기획해" (Task Assign)
     PO->>DB: [Plan] "JWT 토큰 방식 로그인 기획서(Draft)"
     
-    loop Discussion Loop (치열한 토론)
-        PM->>DEV: "PO 기획서 기술 검토해" (Spawn Reviewer)
-        DEV->>DB: [Critique] "보안상 Refresh Token 저장소 수정 필요함" (Reject)
+    loop Discussion Loop (PM Moderation)
+        PM->>PM: "기획서가 나왔군. 기술적 검토가 필요해." (Think)
+        PM->>DEV: "PO 기획서 기술 검토해. 보안 이슈 없나?" (Proactive Call)
+        DEV->>DB: [Critique] "Refresh Token 저장소 문제 있음" (Reject)
         
-        PM->>PO: "DEV 의견 반영해" (Spawn Author)
-        PO->>DB: [Revise] "HttpOnly 쿠키 저장 방식으로 수정함" (Update)
+        PM->>PM: "디자인 관점에서도 봐야겠어." (Think)
+        PM->>UX: "UX 검토해. 사용자 흐름 괜찮아?" (Proactive Call)
+        UX->>DB: [Critique] "에러 메시지가 너무 딱딱함" (Reject)
         
-        PM->>UX: "UX 검토해" (Spawn Reviewer)
-        UX->>DB: [Critique] "로그인 실패 시 에러 메시지 너무 딱딱함" (Reject)
+        PM->>PO: "DEV랑 UX 의견 반영해서 수정해." (Order)
+        PO->>DB: [Revise] "지적사항 반영 완료" (Update)
         
-        PO->>DB: [Revise] "에러 메시지 톤앤매너 수정함" (Update)
+        PM->>PM: "더 빠진 거 없나? QA 의견도 들어볼까?" (Active Check)
     end
     
-    PM->>PO: "더 이상 이견 없지?" (Check Consensus)
-    PO-->>PM: "넵, 합의 완료되었습니다." (Consensus)
-    PM->>DB: [State Transition] PF -> FBD
+    PM->>PM: "모두 동의했군."
+    PM->>DB: [State Transition] PF -> FBD (Consensus Declared)
 ```
 
-*   **Critique (비평):** 다음 단계로 넘어가기 전, 관련 전문가(Reviewer)가 반드시 결과물을 비평한다.
-*   **Revise (수정):** 비평이 있으면 원작자(Author)는 결과물을 수정해야 한다.
-*   **Consensus (합의):** 모든 Reviewer가 `APPROVE`를 낼 때까지 루프를 돈다.
+*   **Role Comprehension:** PM은 각 가재의 역할(`SystemRole`)을 이해하고, 적재적소에 질문을 던진다.
+*   **Proactive Prompting:** 조용한 가재에게도 의견을 묻는다. ("QA가재, 테스트 관점에서 문제없어?")
+*   **Consensus Check:** 모든 쟁점이 해결되었는지 확인 후 `DONE` 선언.
 
 ### 3.5 뇌 부활 및 재동기화 (Resync Protocol)
-*   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
+*   **Sleep:** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
 *   **Wake Up (1년 뒤):**
     1.  DB에서 `context_snapshot` 로드.
     2.  현재 파일 시스템과 비교(Diff).
