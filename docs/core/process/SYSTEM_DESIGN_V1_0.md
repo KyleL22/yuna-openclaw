@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.5 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.6 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **사회자가재(Main Agent)**가 전체 시스템을 오케스트레이션하고, **`gajae-os` (Engine)**는 순수 로직 판단만 담당합니다.
@@ -214,37 +214,50 @@ classDiagram
 *   **Solution:** `gajae-os`가 판단이 필요할 때 `ASK_LLM` 액션을 반환.
 *   **Execution:** `main` Agent(이미 LLM임)가 이 요청을 보고 생각한 뒤, 답을 가지고 `gajae-os`를 다시 실행.
 
-### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
-모든 작업(Task)은 아래 13단계 공정을 엄격하게 따릅니다. 각 단계 전환 시 **CEO의 승인(`Approval Gate`)**이 필수입니다.
+### 3.3 13단계 공정 & 승인 게이트 (Total Gate Control)
+**[원칙]** 모든 공정의 전이(Transition)는 **CEO의 승인(`Approval Gate`)**을 통해서만 이루어집니다.
+가재들이 합의를 마쳐도, CEO가 "승인"하지 않으면 다음 단계로 넘어갈 수 없습니다.
 
 ```mermaid
 stateDiagram-v2
     [*] --> INBOX
-    INBOX --> BACKLOG : Triage by PO
-    BACKLOG --> PF : Scheduled by PM
+    INBOX --> BACKLOG : Triage
+    BACKLOG --> PF : Scheduled
+    
+    PF --> Gate_PF : Task Done
+    Gate_PF --> FBS : CEO Approve
 
-    state "Planning Phase" as Planning {
-        PF --> FBS
-        FBS --> RFD
-        RFD --> FBD
-        FBD --> RFE_RFK : Design Approved
-    }
-    
-    RFE_RFK --> CEO_Gate_1 : Wait for CEO
-    CEO_Gate_1 --> FUE : CEO Approved
+    FBS --> Gate_FBS : Task Done
+    Gate_FBS --> RFD : CEO Approve
 
-    state "Execution Phase" as Execution {
-        FUE --> RFQ
-        RFQ --> FUQ
-    }
+    RFD --> Gate_RFD : Task Done
+    Gate_RFD --> FBD : CEO Approve
+
+    FBD --> Gate_FBD : Task Done
+    Gate_FBD --> RFE_RFK : CEO Approve
+
+    RFE_RFK --> Gate_RFE : Task Done
+    Gate_RFE --> FUE : CEO Approve
+
+    FUE --> Gate_FUE : Task Done
+    Gate_FUE --> RFQ : CEO Approve
+
+    RFQ --> Gate_RFQ : Task Done
+    Gate_RFQ --> FUQ : CEO Approve
+
+    FUQ --> Gate_FUQ : Task Done
+    Gate_FUQ --> RFT : CEO Approve
+
+    RFT --> Gate_RFT : Task Done
+    Gate_RFT --> FUT : CEO Approve
+
+    FUT --> Gate_FUT : Task Done
+    Gate_FUT --> FL : CEO Approve
     
-    FUQ --> CEO_Gate_2 : Wait for CEO
-    CEO_Gate_2 --> RFT : CEO Approved
-    
-    RFT --> FUT
-    FUT --> FL
     FL --> [*]
 ```
+
+*   **CEO Super Pass:** CEO 명령 시 특정 단계 건너뛰기(Skip) 및 강제 전이 가능.
 
 ### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
 *   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
