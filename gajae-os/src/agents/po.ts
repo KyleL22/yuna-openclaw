@@ -1,14 +1,12 @@
 import { db } from '../core/firebase';
-import { Task } from '../types/task.interface';
-import { TaskStatus } from '../types/task_status.enum';
+import { Task, TaskStatus } from '../types/task.interface';
 import { RoleReport } from '../types/role_report.interface';
-import * as fs from 'fs';
-import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * 기획가재 (PO Gajae)
  * - 역할: Product Owner
- * - 수정: Import 경로 수정
+ * - 수정: 로컬 파일 저장 제거 -> Firestore Artifact 저장 (All-in-DB)
  */
 export class POAgent {
   
@@ -19,50 +17,41 @@ export class POAgent {
     const doc = await docRef.get();
     const task = doc.data() as Task;
 
-    // 1. 기획서 생성 (Mock)
-    const onePagerContent = `# 1-Pager: ${task.title}\n\n## 1. 개요\n${task.instruction}\n\n## 2. 요구사항\n- 기능 구현\n- 테스트 완료\n\n## 3. 일정\n- ASAP`;
+    // 1. 기획서 내용 생성 (Mock)
+    const onePagerContent = `# 1-Pager: ${task.title}\n\n## 1. 개요\n${task.instruction}\n\n## 2. 요구사항\n- 기능 구현\n- 테스트 완료\n- DB 올인 전략 적용\n\n## 3. 일정\n- ASAP`;
     
-    // 2. 파일 저장
+    // 2. Artifact 저장 (Firestore Sub-collection)
     const epicId = task.epic_id || 'E001-default';
-    const filePath = `docs/epics/${epicId}/1-plan/1pager.md`;
-    this.saveFile(filePath, onePagerContent);
+    const artifactId = uuidv4();
+    
+    await db.collection('epics').doc(epicId).collection('artifacts').doc(artifactId).set({
+        id: artifactId,
+        type: '1pager',
+        title: `1-Pager: ${task.title}`,
+        content: onePagerContent, // <--- 핵심: 파일 내용 DB 저장
+        created_at: new Date().toISOString()
+    });
 
-    // 3. Artifact 등록
-    await db.collection('epics').doc(epicId).set({
-        artifacts: [{ path: filePath, type: '1pager', created_at: new Date().toISOString() }]
-    }, { merge: true });
+    console.log(`💡 [기획가재] Artifact DB 저장 완료 (ID: ${artifactId})`);
 
-    // 4. 상태 변경: PF -> RFE_RFK
+    // 3. 상태 변경: PF -> RFE_RFK
     await docRef.update({
       status: TaskStatus.RFE_RFK,
       updated_at: new Date().toISOString()
     });
 
-    // 5. Role Report 저장
+    // 4. Role Report 저장
     const report: RoleReport = {
         role_id: 'po',
         task_id: taskId,
-        summary: `기획서(${filePath}) 작성 완료. 주요 내용: ${task.instruction}`,
+        summary: `기획서(DB ID: ${artifactId}) 작성 완료. 주요 내용: ${task.instruction}`,
         status: 'DONE',
         logs: []
     };
     await docRef.collection('reports').doc('po').set(report);
 
-    console.log(`💡 [기획가재] 기획서 작성 및 Report 저장 완료.`);
-    
-    // 6. Chronicle 기록
-    await this.logChronicle('po', 'AGENT_RESPONSE', `기획서(${filePath}) 작성 완료했습니다. 개발 착수 승인 부탁드립니다.`);
-  }
-
-  // 파일 저장 헬퍼
-  private saveFile(relativePath: string, content: string) {
-    const fullPath = path.resolve(process.cwd(), '../', relativePath);
-    const dir = path.dirname(fullPath);
-    
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(fullPath, content);
+    // 5. Chronicle 기록
+    await this.logChronicle('po', 'AGENT_RESPONSE', `기획서(DB:${artifactId}) 작성 완료했습니다. 개발 착수 승인 부탁드립니다.`);
   }
 
   // Chronicle 로그
