@@ -1,69 +1,50 @@
 import { db } from '../core/firebase';
 import { Task, TaskStatus } from '../types/task.interface';
-import { RoleReport } from '../types/role_report.interface';
-import { v4 as uuidv4 } from 'uuid';
+import { OpenClawClient, AgentAction } from '../core/openclaw';
 
 /**
- * 기획가재 (PO Gajae)
- * - 역할: Product Owner
- * - 수정: 로컬 파일 저장 제거 -> Firestore Artifact 저장 (All-in-DB)
+ * 기획가재 (PO Gajae) - Orchestrator Version
+ * - 역할: Product Owner Node
+ * - 기능: PF 단계 Task 확인 -> PO Agent Spawn 지시
  */
 export class POAgent {
-  
-  async processTask(taskId: string) {
-    console.log(`💡 [기획가재] Task(ID:${taskId}) 기획 착수!`);
+  private openclaw = new OpenClawClient();
+
+  async processTask(taskId: string): Promise<AgentAction | null> {
+    console.log(`💡 [기획가재(OS)] Task(ID:${taskId}) 처리 준비...`);
 
     const docRef = db.collection('tasks').doc(taskId);
     const doc = await docRef.get();
+    
+    if (!doc.exists) return null;
     const task = doc.data() as Task;
 
-    // 1. 기획서 내용 생성 (Mock)
-    const onePagerContent = `# 1-Pager: ${task.title}\n\n## 1. 개요\n${task.instruction}\n\n## 2. 요구사항\n- 기능 구현\n- 테스트 완료\n- DB 올인 전략 적용\n\n## 3. 일정\n- ASAP`;
-    
-    // 2. Artifact 저장 (Firestore Sub-collection)
-    const epicId = task.epic_id || 'E001-default';
-    const artifactId = uuidv4();
-    
-    await db.collection('epics').doc(epicId).collection('artifacts').doc(artifactId).set({
-        id: artifactId,
-        type: '1pager',
-        title: `1-Pager: ${task.title}`,
-        content: onePagerContent, // <--- 핵심: 파일 내용 DB 저장
-        created_at: new Date().toISOString()
-    });
+    // 이미 처리 중이거나 완료되었으면 스킵
+    if (task.status === TaskStatus.RFE_RFK) {
+        return null;
+    }
 
-    console.log(`💡 [기획가재] Artifact DB 저장 완료 (ID: ${artifactId})`);
+    // 1. PO Agent에게 시킬 일(Instruction) 정의
+    // (여기서 실제 기획가재에게 줄 프롬프트를 만듭니다)
+    const agentTask = `
+      [Role] 너는 가재 컴퍼니의 '기획가재(PO)'다.
+      [Goal] 다음 요구사항을 바탕으로 '1-Pager 기획서'를 작성하라.
+      [Input] "${task.instruction}"
+      [Output] 
+        1. 'docs/epics/${task.epic_id || 'E001-default'}/1-plan/1pager.md' 파일 생성.
+        2. Firestore '/epics/.../artifacts'에 링크 저장.
+        3. 작업 완료 후 'DONE' 보고.
+    `;
 
-    // 3. 상태 변경: PF -> RFE_RFK
-    await docRef.update({
-      status: TaskStatus.RFE_RFK,
-      updated_at: new Date().toISOString()
-    });
+    // 2. Spawn Action 생성 (직접 파일 안 만듦!)
+    const action = this.openclaw.spawnAgent('po', agentTask, { taskId });
 
-    // 4. Role Report 저장
-    const report: RoleReport = {
-        role_id: 'po',
-        task_id: taskId,
-        summary: `기획서(DB ID: ${artifactId}) 작성 완료. 주요 내용: ${task.instruction}`,
-        status: 'DONE',
-        logs: []
-    };
-    await docRef.collection('reports').doc('po').set(report);
+    // [상태 업데이트는 언제?]
+    // PO Agent가 일을 끝내고 돌아오면 그때 업데이트해야 함.
+    // 하지만 지금은 '지시'만 내리는 단계이므로, 'PROCESSING' 등으로 바꿀 수도 있음.
+    // 일단은 Action만 리턴.
 
-    // 5. Chronicle 기록
-    await this.logChronicle('po', 'AGENT_RESPONSE', `기획서(DB:${artifactId}) 작성 완료했습니다. 개발 착수 승인 부탁드립니다.`);
-  }
-
-  // Chronicle 로그
-  private async logChronicle(speakerId: string, type: string, content: string) {
-    const runId = new Date().toISOString().split('T')[0]; 
-    await db.collection('chronicles').add({
-      run_id: runId,
-      timestamp: new Date().toISOString(),
-      speaker_id: speakerId,
-      type: type,
-      content: content,
-      metadata: {}
-    });
+    console.log(`💡 [기획가재(OS)] PO Agent Spawn 요청 생성 완료.`);
+    return action;
   }
 }
