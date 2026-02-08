@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.3 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.4 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **사회자가재(Main Agent)**가 전체 시스템을 오케스트레이션하고, **`gajae-os` (Engine)**는 순수 로직 판단만 담당합니다.
@@ -17,10 +17,10 @@ graph TD
     
     subgraph "Local Workspace"
         CLI["⚙️ gajae-os (Logic Engine)"]
-        DB[("🔥 Firestore (Memory)")]
+        DB[("🔥 Firestore (Memory & Artifacts)")]
     end
     
-    subgraph "Sanctuary Squad (10 Agents)"
+    subgraph "Sanctuary Squad (10 Micro-Agents)"
         PM["👔 Manager"]
         PO["💡 PO"]
         DEV["💻 Dev"]
@@ -47,17 +47,17 @@ graph TD
     
     %% All agents write to DB
     Main -.->|"[CEO_COMMAND]"| DB
-    PM -.->|"[MODERATION] / [DECISION]"| DB
-    PO -.->|"[PLAN]"| DB
-    DEV -.->|"[CODE]"| DB
-    UX -.->|"[DESIGN]"| DB
+    PM -.->|"[MODERATION]"| DB
+    PO -.->|"[PLAN CONTENT]"| DB
+    DEV -.->|"[CODE CONTENT]"| DB
+    UX -.->|"[DESIGN CONTENT]"| DB
 
     %% Web View
     DB -.->|"Realtime Stream (onSnapshot)"| Web
 ```
 
-### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Agents)
-**[Concept]**: **사회자가재(Main)**를 포함한 총 11명의 가재가 협업합니다.
+### 1.1 성역의 수호자들 (Sanctuary Squad - 10 Micro-Agents)
+**[Concept]**: 10명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. (비서가재는 Main Agent로 통합됨)
 
 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
@@ -94,7 +94,7 @@ classDiagram
         +String title
         +EpicStatus status
         +Priority priority
-        +String thread_id (LangGraph)
+        +String thread_id
         +Map context_snapshot
     }
 
@@ -107,6 +107,15 @@ classDiagram
         +String assignee_id
     }
 
+    class Artifact {
+        +String id
+        +String epic_id
+        +String type (1pager, code, design...)
+        +String title
+        +String content (Text/Markdown)
+        +DateTime created_at
+    }
+
     class RoleReport {
         +String role_id
         +String summary
@@ -116,7 +125,6 @@ classDiagram
 
     class ChronicleEntry {
         +String id
-        +String run_id
         +DateTime timestamp
         +String speaker_id
         +DialogueType type
@@ -124,73 +132,23 @@ classDiagram
         +Map metadata (emotion, intent)
     }
 
-    %% Enums
-    class TaskStatus {
-        <<enumeration>>
-        INBOX
-        BACKLOG
-        PF, FBS, RFD, FBD, RFE_RFK
-        FUE, RFQ, FUQ, RFT, FUT
-        FL, FNL
-    }
-
-    class Priority {
-        <<enumeration>>
-        URGENT (Interrupt)
-        HIGH
-        NORMAL
-        LOW
-    }
-
-    class DialogueType {
-        <<enumeration>>
-        CEO_COMMAND
-        AGENT_DISCUSSION (🗣️)
-        AGENT_RESPONSE (💬)
-        INTENT (❗️)
-        EMOTION (❤️)
-        MODERATION (⚖️)
-    }
-
     Project "1" *-- "many" Epic : Contains
     Epic "1" *-- "many" Task : Contains (Optional)
+    Epic "1" *-- "many" Artifact : Contains
     Task "1" *-- "many" RoleReport : Contains
 ```
 
 ### 2.2 Firestore Schema Definition
 
 #### A. `/projects/{projectId}`
-*   `name`: 프로젝트명
-*   `current_epics`: 진행 중인 Epic ID 목록
-
 #### B. `/epics/{epicId}`
-*   `project_id`: 소속 프로젝트 ID
-*   `title`: 에픽 명칭
-*   `status`: 상태 (PLANNING, IN_PROGRESS, DONE, PAUSED)
-*   `priority`: 우선순위 (**URGENT**, HIGH, NORMAL, LOW)
-*   `thread_id`: LangGraph 상태 저장용 ID
-*   `artifacts`: 산출물 링크 목록 (Git 경로 + 웹 URL)
-*   `context_snapshot`: 장기 보존용 상태 스냅샷 (Resync 용)
+#### C. `/tasks/{taskId}`
+#### D. `/epics/{epicId}/artifacts/{artifactId}` (New)
+*   `type`: 산출물 타입 (1pager, api_spec...)
+*   **`content`**: **산출물 내용 전문 (Markdown Text)**
+*   `created_at`: 생성 일시
 
-#### C. `/tasks/{taskId}` (Work Queue Item)
-*   `epic_id`: 소속 에픽 ID (**Optional** - 없으면 백로그)
-*   `project_id`: 소속 프로젝트 ID
-*   `title`: 작업명
-*   `instruction`: 구체적 작업 지시
-*   `status`: **INBOX**, **BACKLOG**, **PF**, ... (13공정)
-*   `assignee`: 담당 가재 ID (`dev`, `po`...)
-
-#### D. `/tasks/{taskId}/reports/{roleId}` (Role-Specific Memory)
-*   `role_id`: `dev`, `ux` 등
-*   `summary`: 해당 역할 관점의 요약 (기술적/디자인적 등)
-*   `status`: DONE, IN_PROGRESS
-*   `logs`: 해당 역할의 실행 로그 모음
-
-#### E. `/chronicles/{runId}/entries/{entryId}` (Logs)
-*   `speaker_id`: 발화자 (main, pm, dev...)
-*   `type`: `AGENT_DISCUSSION`(🗣️), `AGENT_RESPONSE`(💬), `INTENT`(❗️), `EMOTION`(❤️), `MODERATION`(⚖️)
-*   `content`: 마크다운 내용
-*   `metadata`: 상세 정보 (숨김 처리 가능)
+#### E. `/chronicles/{runId}/entries/{entryId}`
 
 ---
 
@@ -206,24 +164,21 @@ classDiagram
 *   **Problem:** `gajae-os` (로컬 Node)에서 LLM API를 직접 호출하면 비용 발생.
 *   **Solution:** `gajae-os`가 판단이 필요할 때 `ASK_LLM` 액션을 반환.
 *   **Execution:** `main` Agent(이미 LLM임)가 이 요청을 보고 생각한 뒤, 답을 가지고 `gajae-os`를 다시 실행.
-    *   `Manager` -> `ASK_LLM("다음은 누구?")` -> `Main` -> `gajae-os("PO 불러")` -> `SPAWN_AGENT("PO")`.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
 *   각 공정(Step)의 끝에는 **"CEO 승인(Human-in-the-loop)"** 단계가 필수.
 *   담당 가재가 "완료 보고"를 올리면 -> 사회자가재가 CEO에게 알림 -> CEO 승인 시 다음 단계로 전이.
-*   **CEO Super Pass:** CEO 명령 시 특정 단계 건너뛰기(Skip) 및 강제 전이 가능.
 
 ### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
 *   **Sleep (동면):** Epic 종료/중단 시 `Summary` 작성 후 컨텍스트 삭제.
 *   **Wake Up (1년 뒤):**
     1.  DB에서 `context_snapshot` 로드.
-    2.  현재 파일 시스템과 비교(Diff).
+    2.  DB의 `artifacts` 내용 로드.
     3.  변경된 환경에 맞춰 상태(State) 보정 후 재개.
 
-### 3.5 아티팩트 관리 (Dual Storage)
-*   **원본:** Git 저장소 (`docs/epics/...`)에 마크다운으로 저장.
-*   **인덱스:** Firestore에 해당 파일의 링크 저장.
-*   **보고:** 사회자가재가 DB 조회 후 "여기 있습니다" 하고 링크 제공.
+### 3.5 아티팩트 관리 (All-in-DB Strategy)
+*   **저장소:** 모든 산출물(기획서, 디자인 가이드 등)은 **Firestore `artifacts` 컬렉션**에 텍스트 형태로 저장한다.
+*   **Git:** 오직 `gajae-os` 시스템 코드와 `SYSTEM_DESIGN` 문서만 저장한다. (데이터와 코드의 완전한 분리)
 
 ---
 
@@ -231,29 +186,26 @@ classDiagram
 
 ### 4.1 디렉토리 구조 (Canonical Directory)
 ```
-docs/
-├── epics/                  # 에픽별 산출물 아카이브
-│   ├── E001-login/
-│   │   ├── 1-plan/ (1pager.md)
-│   │   ├── 2-design/ (gui.md)
-│   │   └── 3-dev/ (api.md)
-├── core/role/              # 가재별 역할 정의 (ROLE_DEV.md)
+yuna-openclaw/
+├── docs/
+│   └── core/               # 시스템 핵심 문서 (System Design, Culture)
 └── gajae-os/               # 시스템 코드 (TS - Orchestrator)
     ├── src/
-    │   ├── agents/         # 에이전트 로직 (PO, PM, DEV...)
+    │   ├── agents/         # 에이전트 로직
     │   ├── core/           # Firebase, OpenClawClient
     │   ├── graph/          # LangGraph Workflow
     │   └── types/          # TS Interfaces
     ├── .env                # (루트 참조)
     └── cli.ts              # CLI Entry Point
 ```
+(※ `docs/epics/` 폴더는 사용하지 않음)
 
 ### 4.2 기술 스택
 *   **Language:** TypeScript (Node.js)
 *   **Orchestration:** LangGraph.js
-*   **Storage:** Firestore (Data/Queue) + Local Git (Docs/Code)
+*   **Storage:** Firestore (Data/Queue/Artifacts)
 *   **Brain:** Main Agent (OpenClaw) Delegation
 
 ---
 
-**[결론]**: 이 설계도는 **사회자가재(Main/Brain)**와 **가재 OS(Body)**가 결합된 완전 자율형 조직 시스템이며, 모든 데이터는 **Web Dashboard**를 통해 투명하게 시각화됩니다. 🦞🚀
+**[결론]**: 이 설계도는 **사회자가재(Main/Brain)**와 **가재 OS(Body)**가 결합된 완전 자율형 조직 시스템이며, 모든 데이터(산출물 포함)는 **Firestore에 중앙 집중화**되어 관리됩니다. 🦞🚀
