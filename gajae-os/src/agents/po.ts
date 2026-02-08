@@ -1,5 +1,6 @@
 import { db } from '../core/firebase';
-import { Task, TaskStatus } from '../types/task.interface';
+import { Task } from '../types/task.interface';
+import { TaskStatus } from '../types/task_status.enum';
 import { RoleReport } from '../types/role_report.interface';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -7,7 +8,7 @@ import * as path from 'path';
 /**
  * 기획가재 (PO Gajae)
  * - 역할: Product Owner
- * - 기능: PF 단계 Task 처리 -> 기획서 생성 -> RFE_RFK 상태 변경 -> Report 저장
+ * - 수정: Import 경로 수정
  */
 export class POAgent {
   
@@ -37,13 +38,13 @@ export class POAgent {
       updated_at: new Date().toISOString()
     });
 
-    // 5. Role Report 저장 (핵심 추가!!)
+    // 5. Role Report 저장
     const report: RoleReport = {
         role_id: 'po',
         task_id: taskId,
         summary: `기획서(${filePath}) 작성 완료. 주요 내용: ${task.instruction}`,
         status: 'DONE',
-        logs: [] // 나중에 실제 로그 ID 연결
+        logs: []
     };
     await docRef.collection('reports').doc('po').set(report);
 
