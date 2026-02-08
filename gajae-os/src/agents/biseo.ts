@@ -12,30 +12,46 @@ export class BiseoAgent {
   async receiveCommand(commandText: string, speakerId: string = 'CEO') {
     console.log(`🦞 [비서가재] 명령 수신: "${commandText}"`);
 
-    // 2. 의도 분석 (나중엔 LLM으로 고도화)
-    // 지금은 무조건 'INBOX' Task로 만듦.
-    
-    // 3. Task 생성 (INBOX)
+    // [0. Chronicle 기록] - CEO 발언 저장
+    await this.logChronicle(speakerId, 'CEO_COMMAND', commandText);
+
+    // 1. Task 생성 (INBOX)
     const taskId = uuidv4();
     const newTask: Task = {
       id: taskId,
-      project_id: 'yuna-openclaw', // 일단 하드코딩 (나중엔 컨텍스트에서 추론)
-      title: commandText.slice(0, 50), // 제목은 앞부분만
+      project_id: 'yuna-openclaw', // 일단 하드코딩
+      title: commandText.slice(0, 50),
       instruction: commandText,
-      status: TaskStatus.INBOX, // <--- 핵심: 분류 전 상태
+      status: TaskStatus.INBOX, 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    // 4. Firestore 저장
+    // 2. Firestore 저장
     await db.collection('tasks').doc(taskId).set(newTask);
     console.log(`🦞 [비서가재] INBOX에 저장 완료 (ID: ${taskId})`);
 
-    // 5. 매니저가재 호출 (Delegate)
-    // 원래는 여기서 LangGraph를 통해 매니저를 깨워야 함.
-    // 지금은 로그만 남김.
+    // [3. Chronicle 기록] - 비서가재 응답 저장
+    await this.logChronicle('biseo', 'AGENT_RESPONSE', `넵, "${commandText}" 접수하여 INBOX에 등록했습니다.`);
+
+    // 4. 매니저가재 호출 (Delegate)
     console.log(`🦞 [비서가재] 매니저가재님, 새 일감이 왔습니다! 확인해주세요.`);
     
     return taskId;
+  }
+
+  // Chronicle 로그 저장 헬퍼
+  private async logChronicle(speakerId: string, type: string, content: string) {
+    // Run ID는 일단 날짜 단위로 그룹핑 (예: 2026-02-08)
+    const runId = new Date().toISOString().split('T')[0]; 
+    
+    await db.collection('chronicles').add({
+      run_id: runId,
+      timestamp: new Date().toISOString(),
+      speaker_id: speakerId,
+      type: type,
+      content: content,
+      metadata: {}
+    });
   }
 }
