@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.2 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v15.3 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **사회자가재(Main Agent)**가 전체 시스템을 오케스트레이션하고, **`gajae-os` (Engine)**는 순수 로직 판단만 담당합니다.
@@ -20,7 +20,7 @@ graph TD
         DB[("🔥 Firestore (Memory)")]
     end
     
-    subgraph "Sanctuary Squad (10 Micro-Agents)"
+    subgraph "Sanctuary Squad (10 Agents)"
         PM["👔 Manager"]
         PO["💡 PO"]
         DEV["💻 Dev"]
@@ -56,8 +56,8 @@ graph TD
     DB -.->|"Realtime Stream (onSnapshot)"| Web
 ```
 
-### 1.1 성역의 수호자들 (Sanctuary Squad - 10 Micro-Agents)
-**[Concept]**: 10명의 가재는 **OpenClaw 상의 독립된 Agent ID**를 가집니다. (비서가재는 Main Agent로 통합됨)
+### 1.1 성역의 수호자들 (Sanctuary Squad - 11 Agents)
+**[Concept]**: **사회자가재(Main)**를 포함한 총 11명의 가재가 협업합니다.
 
 | 코드 ID (`agentId`) | 한글 애칭 | 역할 (Role) | 비고 |
 | :--- | :--- | :--- | :--- |
