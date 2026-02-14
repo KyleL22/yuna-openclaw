@@ -8,69 +8,9 @@ import {
   Flag,
   ArrowRight,
 } from "lucide-react";
+import { loadProjectGateRows, type ProjectGateRow } from "@/feature/projects/data/project_gate_parser";
 
-const projects = [
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "1. PF",
-    owner: "PM",
-    status: "DONE",
-    approval: "APPROVED",
-    lastUpdated: "2026-02-06",
-    commit: "",
-    waiting: false,
-  },
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "2. FBS",
-    owner: "PO",
-    status: "DONE",
-    approval: "APPROVED",
-    lastUpdated: "2026-02-06",
-    commit: "https://github.com/yuna-studio/yuna-openclaw/commit/cff11de",
-    waiting: false,
-  },
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "3. RFD",
-    owner: "UX",
-    status: "DONE",
-    approval: "APPROVED",
-    lastUpdated: "2026-02-06",
-    commit: "https://github.com/yuna-studio/yuna-openclaw/commit/f3d32c9",
-    waiting: false,
-  },
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "4. FBD",
-    owner: "UX",
-    status: "DONE",
-    approval: "APPROVED",
-    lastUpdated: "2026-02-06",
-    commit: "https://github.com/yuna-studio/yuna-openclaw/commit/489b926",
-    waiting: false,
-  },
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "5. RFE/RFK",
-    owner: "PM",
-    status: "DONE",
-    approval: "WAITING",
-    lastUpdated: "2026-02-06",
-    commit: "https://github.com/yuna-studio/yuna-openclaw/commit/f3d32c9",
-    waiting: true,
-  },
-  {
-    feature: "[GAJAE-BIP] Service-MVP v1.7",
-    step: "6. 기술 구현",
-    owner: "DEV",
-    status: "INPROGRESS",
-    approval: "WAITING",
-    lastUpdated: "2026-02-06",
-    commit: "",
-    waiting: true,
-  },
-];
+export const dynamic = "force-dynamic";
 
 const getStatusChip = (status: string) => {
   if (status === "DONE") {
@@ -105,7 +45,9 @@ const getApprovalChip = (approval: string) => {
   };
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects: ProjectGateRow[] = await loadProjectGateRows();
+
   const doneCount = projects.filter((p) => p.status === "DONE").length;
   const inProgressCount = projects.filter((p) => p.status === "INPROGRESS").length;
   const waitingCount = projects.filter((p) => p.waiting).length;
@@ -155,7 +97,7 @@ export default function ProjectsPage() {
               const statusChip = getStatusChip(item.status);
               const approvalChip = getApprovalChip(item.approval);
               return (
-                <tr key={`${item.step}`} className="border-b border-slate-100">
+                <tr key={`${item.step}-${item.owner}`} className="border-b border-slate-100">
                   <td className="py-4 px-4 font-black text-sm">{item.feature}</td>
                   <td className="py-4 px-4 text-xs">
                     <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border-2 border-slate-200 bg-slate-50 font-black">
@@ -165,22 +107,22 @@ export default function ProjectsPage() {
                   </td>
                   <td className="py-4 px-4">{item.owner}</td>
                   <td className="py-4 px-4">
-                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${statusChip.cls} font-black text-xs uppercase`}> 
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${statusChip.cls} font-black text-xs uppercase`}>
                       {statusChip.icon}
                       {statusChip.text}
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${approvalChip.cls} font-black text-xs uppercase`}> 
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${approvalChip.cls} font-black text-xs uppercase`}>
                       {approvalChip.icon}
                       {approvalChip.text}
                     </span>
                   </td>
                   <td className="py-4 px-4 text-sm text-slate-500">{item.lastUpdated}</td>
                   <td className="py-4 px-4 text-sm">
-                    {item.commit ? (
+                    {item.commitUrl ? (
                       <a
-                        href={item.commit}
+                        href={item.commitUrl}
                         className="inline-flex items-center gap-2 text-ghibli-blue font-black hover:underline"
                         target="_blank"
                         rel="noreferrer"
