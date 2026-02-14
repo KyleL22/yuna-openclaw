@@ -16,18 +16,40 @@ export type ProjectGateRow = {
 };
 
 const stripMarkdown = (value: string): string => {
-  const withoutEmphasis = value.replace(/\*\*/g, "");
-  return withoutEmphasis
+  return value
+    .replace(/\*\*/g, "")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[(.*?)\]\([^\)]*\)/g, "$1")
     .trim();
 };
 
-const extractCommitUrl = (value: string): string => {
-  const match = value.match(/\((https?:\/\/[^)]+)\)/);
-  if (match?.[1]) return match[1];
+const normalizeToken = (value: string): string => {
+  return stripMarkdown(value)
+    .replace(/[^\w\s\/]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+};
 
-  return "";
+const parseStatus = (value: string): ProjectStatus => {
+  const normalized = normalizeToken(value);
+  if (normalized.includes("DONE")) return "DONE";
+  if (normalized.includes("INPROGRESS")) return "INPROGRESS";
+  if (normalized.includes("CANCELLED")) return "CANCELLED";
+  if (normalized.includes("HOLD")) return "HOLD";
+  return normalized;
+};
+
+const parseApproval = (value: string): ApprovalStatus => {
+  const normalized = normalizeToken(value);
+  if (normalized.includes("APPROVED")) return "APPROVED";
+  if (normalized.includes("WAITING")) return "WAITING";
+  return normalized;
+};
+
+const extractCommitUrl = (value: string): string => {
+  const matched = value.match(/https?:\/\/[^\s\)]+/);
+  return matched?.[0] ?? "";
 };
 
 const toCellArray = (line: string): string[] => {
@@ -35,12 +57,31 @@ const toCellArray = (line: string): string[] => {
     .trim()
     .split("|")
     .slice(1)
-    .map((item) => stripMarkdown(item));
+    .map((item) => item.trim());
+};
+
+const resolveGatePath = async (): Promise<string> => {
+  const root = process.cwd();
+  const candidates = [
+    path.resolve(root, "docs/pm/GATE.md"),
+    path.resolve(root, "../docs/pm/GATE.md"),
+    path.resolve(root, "gajae-company/docs/pm/GATE.md"),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch {
+      continue;
+    }
+  }
+
+  return candidates[0];
 };
 
 export const loadProjectGateRows = async (): Promise<ProjectGateRow[]> => {
-  const root = process.cwd();
-  const gatePath = path.resolve(root, "docs/pm/GATE.md");
+  const gatePath = await resolveGatePath();
   const md = await fs.readFile(gatePath, "utf8");
 
   const lines = md.split("\n").map((line) => line.trimEnd());
@@ -51,22 +92,22 @@ export const loadProjectGateRows = async (): Promise<ProjectGateRow[]> => {
 
   if (startIndex === -1) return [];
 
-  // Skip header + divider, parse until blank/non-table line.
   return lines
     .slice(startIndex + 2)
     .map((line) => line.trim())
     .filter((line) => line.startsWith("|") && !line.startsWith("| :"))
-    .map((line) => {
-      const cells = toCellArray(line);
+    .map((line) => toCellArray(line))
+    .map((cells) => {
+      const approval = parseApproval(cells[4] ?? "");
       return {
-        feature: cells[0] ?? "",
-        step: cells[1] ?? "",
-        owner: cells[2] ?? "",
-        status: cells[3] ?? "",
-        approval: cells[4] ?? "",
-        lastUpdated: cells[5] ?? "",
+        feature: stripMarkdown(cells[0] ?? ""),
+        step: stripMarkdown(cells[1] ?? ""),
+        owner: stripMarkdown(cells[2] ?? ""),
+        status: parseStatus(cells[3] ?? ""),
+        approval,
+        lastUpdated: stripMarkdown(cells[5] ?? ""),
         commitUrl: extractCommitUrl(cells[6] ?? ""),
-        waiting: (cells[4] ?? "").includes("WAITING"),
+        waiting: approval.includes("WAITING"),
       } as ProjectGateRow;
     })
     .filter((row) => row.feature && row.step);
